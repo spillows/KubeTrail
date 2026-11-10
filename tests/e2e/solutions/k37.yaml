@@ -1,0 +1,19 @@
+id: k37
+steps:
+  - run: [kubectl, taint, nodes, mq-multi-m03, "dedicated=gpu:NoSchedule", --overwrite]
+  - apply:
+      - apiVersion: batch/v1
+        kind: Job
+        metadata: {name: gpu-job}
+        spec:
+          template:
+            spec:
+              restartPolicy: Never
+              nodeSelector: {kubernetes.io/hostname: mq-multi-m03}
+              tolerations:
+                - {key: dedicated, operator: Equal, value: gpu, effect: NoSchedule}
+              containers:
+                - name: job
+                  image: busybox:1.36
+                  command: [echo, done]
+  - run: [kubectl, wait, --for=condition=Complete, job/gpu-job, -n, lab-k37, --timeout=180s]

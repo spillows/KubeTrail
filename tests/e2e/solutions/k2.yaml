@@ -1,0 +1,4 @@
+id: k2
+steps:
+  - run: [kubectl, run, hello, --image=nginx:1.27, --labels=app=hello, -n, lab-k2]
+  - run: [kubectl, wait, --for=condition=Ready, pod/hello, -n, lab-k2, --timeout=180s]

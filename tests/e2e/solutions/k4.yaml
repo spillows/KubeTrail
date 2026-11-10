@@ -1,0 +1,5 @@
+id: k4
+steps:
+  - run: [kubectl, rollout, status, deployment/green, -n, lab-k4, --timeout=180s]
+  - run: [kubectl, expose, deployment, green, --name=web, --port=80, -n, lab-k4]
+  - run: [kubectl, wait, "--for=jsonpath={.endpoints[0].conditions.ready}=true", endpointslice, -l, kubernetes.io/service-name=web, -n, lab-k4, --timeout=60s]

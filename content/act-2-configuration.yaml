@@ -1,0 +1,80 @@
+id: II
+title: Configuration
+duration: about 3 hours
+description: Keep settings and passwords out of the image. Give a Pod its configuration as variables and as files, and tell the scheduler how much CPU and memory each container needs.
+quests:
+- id: k7
+  type: READ
+  tags: [k8s]
+  minutes: 40
+  title: Read about ConfigMaps, Secrets and resource management
+  task: Read the four concept pages. Write one sentence for each of these questions. How does a Pod read a ConfigMap? Why is a Secret not encrypted by default? What does the scheduler do with a request, and what does the kubelet do with a limit? What does a ResourceQuota count? Then click "Mark done".
+  links:
+  - title: ConfigMaps
+    url: https://kubernetes.io/docs/concepts/configuration/configmap/
+  - title: Secrets
+    url: https://kubernetes.io/docs/concepts/configuration/secret/
+  - title: Resource management for Pods and containers
+    url: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+  - title: Resource quotas
+    url: https://kubernetes.io/docs/concepts/policy/resource-quotas/
+- id: k8
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: A ConfigMap as variables and as a file
+  task: >-
+    Click "Start lab". Make the ConfigMap "app-config" with the key GREETING
+    and the value hello. Make the Deployment "web" with the image nginx:1.27.
+    Its container gets each key of "app-config" as an environment variable,
+    and it also mounts "app-config" as a volume, thus each key is a file. Find
+    the variable and the file in a running Pod. Then click "Check my work".
+  links:
+  - title: Configure a Pod to use a ConfigMap
+    url: https://kubernetes.io/docs/tasks/configure-pod-container/configure-pod-configmap/
+- id: k9
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: A Secret as a mounted file
+  task: >-
+    Click "Start lab". The lab namespace has the Secret "db-creds". Decode its
+    values. Make the Pod "api" with the image nginx:1.27 that reads "db-creds"
+    as files in a volume. Do not put the values in environment variables: a
+    variable shows in the output of some tools and in crash reports. Then click
+    "Check my work".
+  links:
+  - title: Distribute credentials securely using Secrets
+    url: https://kubernetes.io/docs/tasks/inject-data-application/distribute-credentials-secure/
+  - title: Good practices for Secrets
+    url: https://kubernetes.io/docs/concepts/security/secrets-good-practices/
+- id: k10
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: Requests, limits and the QoS class
+  task: >-
+    Click "Start lab". Make two Pods with the image nginx:1.27. Give the Pod
+    "fixed" the QoS class Guaranteed, and the Pod "flex" the QoS class
+    Burstable. Kubernetes sets the class from the requests and the limits of
+    the containers. Find the class of each Pod. Then click "Check my work".
+  links:
+  - title: Pod Quality of Service classes
+    url: https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/
+  - title: Assign CPU resources
+    url: https://kubernetes.io/docs/tasks/configure-pod-container/assign-cpu-resource/
+- id: k11
+  type: LAB
+  tags: [k8s]
+  minutes: 40
+  title: A ResourceQuota refuses a Deployment
+  task: >-
+    Click "Start lab". The lab namespace has a ResourceQuota and the Deployment
+    "api" with 3 replicas, but fewer than 3 Pods run. Find which object refuses
+    the Pods, and why. Change the Deployment so that 3 replicas run. Do not
+    change the quota. Then click "Check my work".
+  links:
+  - title: Resource quotas
+    url: https://kubernetes.io/docs/concepts/policy/resource-quotas/
+  - title: Debug a Deployment
+    url: https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/

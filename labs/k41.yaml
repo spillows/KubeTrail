@@ -1,0 +1,26 @@
+# Lab k41. Needs the mq-multi profile, as the design says for Act XII. The
+# CRD is cluster-scoped. Reset deletes the lab namespace and the Widget, not
+# the CRD.
+id: k41
+title: A CRD and a custom resource
+namespace: lab-k41
+needs: [nodes:3]
+setup: []
+checks:
+  - id: scope
+    say: The CRD "widgets.quest.example.com" has the scope Namespaced.
+    get: customresourcedefinition/widgets.quest.example.com
+    why: A Namespaced custom resource lives in a namespace, as a Deployment does. A Cluster resource does not.
+    path: "{.spec.scope}"
+    equals: Namespaced
+  - id: size
+    say: The Widget "first" has spec.size 3.
+    get: widget/first
+    why: The API server keeps a custom resource in etcd and validates it with the schema of the CRD.
+    path: "{.spec.size}"
+    equals: "3"
+hints:
+  - The name of the CRD is the plural and the group, widgets.quest.example.com.
+  - Give spec.names the plural widgets, the singular widget and the kind Widget.
+  - The schema goes under versions[0].schema.openAPIV3Schema. Mark the version served and storage.
+  - The Widget has apiVersion quest.example.com/v1 and kind Widget.

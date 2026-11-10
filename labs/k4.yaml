@@ -1,0 +1,64 @@
+# Lab k4. Setup makes two Deployments whose Pods both have app=web. Only the
+# track label tells them apart. The checks read the selector of the Service
+# and the Pod names in its EndpointSlices.
+id: k4
+title: A Service that selects the right Pods
+namespace: lab-k4
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: blue
+    spec:
+      replicas: 2
+      selector:
+        matchLabels: {app: web, track: blue}
+      template:
+        metadata:
+          labels: {app: web, track: blue}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+              ports: [{containerPort: 80}]
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: green
+    spec:
+      replicas: 2
+      selector:
+        matchLabels: {app: web, track: green}
+      template:
+        metadata:
+          labels: {app: web, track: green}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+              ports: [{containerPort: 80}]
+checks:
+  - id: selector
+    say: The Service "web" selects the label track=green.
+    get: service/web
+    why: A Service sends traffic to each Pod that has all the labels of its selector. app=web alone also selects blue.
+    path: "{.spec.selector.track}"
+    equals: green
+  - id: port
+    say: The Service "web" listens on port 80.
+    get: service/web
+    why: Clients connect to the port of the Service. The Service forwards to the target port of the Pods.
+    path: "{.spec.ports[0].port}"
+    equals: "80"
+  - id: endpoints
+    say: The EndpointSlices of "web" name only Pods of "green".
+    get: endpointslices
+    selector: kubernetes.io/service-name=web
+    why: The EndpointSlices list the Pods that get traffic. A Pod of blue in the list gets traffic too.
+    path: "{.items[*].endpoints[*].targetRef.name}"
+    matches: "green-.*"
+hints:
+  - Show the labels of the Pods with `kubectl get pods --show-labels`.
+  - A selector with one label selects too many Pods here. A Service selector can have more than one label.
+  - "`kubectl expose deployment green --name=web --port=80` copies the selector of the Deployment \"green\"."
+  - Find the EndpointSlice with `kubectl get endpointslices -l kubernetes.io/service-name=web -o yaml`.

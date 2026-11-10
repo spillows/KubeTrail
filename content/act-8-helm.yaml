@@ -1,0 +1,144 @@
+id: VIII
+title: Helm
+duration: about 6 hours
+description: Package your apps as charts. Install, upgrade and roll back releases, use values, hooks, tests and subcharts, and repair a broken chart.
+quests:
+- id: h1
+  type: READ
+  tags: [helm]
+  minutes: 40
+  title: Read about charts, releases, revisions and values
+  task: Read the three pages. Write one sentence for each of these questions. What is a chart? What is a release, and what is a revision? Where does Helm keep the history of a release? How do values change a chart? Then click "Mark done".
+  links:
+  - title: Using Helm
+    url: https://helm.sh/docs/intro/using_helm/
+  - title: Charts
+    url: https://helm.sh/docs/topics/charts/
+  - title: Values files
+    url: https://helm.sh/docs/chart_template_guide/values_files/
+- id: h2
+  type: LAB
+  tags: [helm]
+  minutes: 30
+  title: Install, upgrade and roll back a release
+  task: >-
+    Click "Start lab". Install the chart charts/demo as the release "demo" in
+    the lab namespace. Upgrade the release so that it uses the image tag
+    1.27-alpine. Then roll the release back to revision 1, so that the
+    Deployment "demo" uses nginx:1.27 again. Look at the history of the
+    release. Then click "Check my work".
+  links:
+  - title: helm rollback
+    url: https://helm.sh/docs/helm/helm_rollback/
+- id: h3
+  type: LAB
+  tags: [helm]
+  minutes: 30
+  title: Values files and --set
+  task: >-
+    Click "Start lab". Write two values files in workspace/h3/. The file
+    base.yaml sets 2 replicas and the image tag 1.26. The file prod.yaml sets 3
+    replicas. Install the chart charts/demo as the release "site" in the lab
+    namespace with base.yaml first and prod.yaml second. On the command line,
+    set the image tag 1.27-alpine. Before you check, say which replica count
+    and which tag the Deployment "site" has. Then click "Check my work".
+  links:
+  - title: Values files
+    url: https://helm.sh/docs/chart_template_guide/values_files/
+- id: h4
+  type: LAB
+  tags: [helm]
+  minutes: 40
+  title: Roll the Pods when the configuration changes
+  task: >-
+    Click "Start lab". The Pods of charts/demo read the greeting from the
+    ConfigMap "demo-config". A change to the ConfigMap does not restart them.
+    Copy the chart to workspace/h4/. In the copy, add a checksum/config
+    annotation to the Pod template, with the checksum of the ConfigMap
+    template. Install the copy as the release "demo" in the lab namespace.
+    Then upgrade the release with the greeting "bonjour", so that the
+    Deployment makes new Pods. Then click "Check my work".
+  links:
+  - title: Automatically roll deployments
+    url: https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments
+- id: h5
+  type: READ
+  tags: [helm]
+  minutes: 40
+  title: Read about templates, named templates and functions
+  task: Read the three pages. Write one sentence for each of these questions. What does a template make from the values? What does a named template in _helpers.tpl do, and how do you use it? What do the functions quote, include and nindent do? Then click "Mark done".
+  links:
+  - title: Getting started with templates
+    url: https://helm.sh/docs/chart_template_guide/getting_started/
+  - title: Named templates
+    url: https://helm.sh/docs/chart_template_guide/named_templates/
+  - title: Template functions and pipelines
+    url: https://helm.sh/docs/chart_template_guide/functions_and_pipelines/
+- id: h6
+  type: LAB
+  tags: [helm]
+  minutes: 30
+  title: A chart with a subchart
+  task: >-
+    Click "Start lab". Copy charts/demo to workspace/h6/. Make charts/cache a
+    subchart of the copy. Install the copy as the release "demo" in the lab
+    namespace, so that the Deployment "demo-cache" is ready and belongs to the
+    release "demo". Then click "Check my work".
+  links:
+  - title: Subcharts and global values
+    url: https://helm.sh/docs/chart_template_guide/subcharts_and_globals/
+- id: h7
+  type: LAB
+  tags: [helm]
+  minutes: 30
+  title: A hook Job that runs before the install
+  task: >-
+    Click "Start lab". Copy charts/demo to workspace/h7/. Add a Job "migrate"
+    to the copy. Helm must run it before it installs the other objects of the
+    chart. Install the copy as the release "demo" in the lab namespace, so
+    that the Job completes. Then click "Check my work".
+  links:
+  - title: Chart hooks
+    url: https://helm.sh/docs/topics/charts_hooks/
+- id: h8
+  type: LAB
+  tags: [helm]
+  minutes: 30
+  title: helm test
+  task: >-
+    Click "Start lab". Copy charts/demo to workspace/h8/. Add a test Pod
+    "test-connection" to the copy. It gets a page from the Service of the
+    release. Install the copy as the release "demo" in the lab namespace, then
+    run the tests of the release, so that the test Pod succeeds. Then click
+    "Check my work".
+  links:
+  - title: Chart tests
+    url: https://helm.sh/docs/topics/chart_tests/
+- id: h9
+  type: LAB
+  tags: [helm]
+  minutes: 30
+  title: A failed upgrade that rolls itself back
+  task: >-
+    Click "Start lab". Install charts/demo as the release "demo" in the lab
+    namespace. Then upgrade it with an image tag that does not exist, and tell
+    Helm to roll back if the upgrade fails. The history must show the failed
+    revision, and the Deployment "demo" must use nginx:1.27 again. Then click
+    "Check my work".
+  links:
+  - title: helm upgrade
+    url: https://helm.sh/docs/helm/helm_upgrade/
+- id: h10
+  type: BOSS
+  tags: [helm]
+  minutes: 45
+  title: Repair a broken chart
+  task: >-
+    Click "Start lab". Copy charts/broken to workspace/h10/. Install the copy
+    as the release "shop" in the lab namespace. The Pods start, but the
+    Service "shop" gets no traffic to them. Find the faults in the chart and
+    repair them in the copy. Then upgrade the release, so that the Service
+    has endpoints on the container port. Then click "Check my work".
+  links:
+  - title: Debugging templates
+    url: https://helm.sh/docs/chart_template_guide/debugging/

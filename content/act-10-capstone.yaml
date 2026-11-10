@@ -1,0 +1,18 @@
+id: X
+title: Capstone
+duration: about 1 hour
+description: Use Terraform and Helm together. Terraform owns a Helm release of the chart that you used in Act VIII.
+quests:
+- id: c1
+  type: BOSS
+  tags: [tf, helm]
+  minutes: 60
+  title: Terraform installs a Helm release
+  task: >-
+    Click "Start lab". Work in workspace/c1/, with the namespace lab-c1 and
+    the secret_suffix c1 in the backend. Use the Helm provider of Terraform,
+    not the helm command, to install charts/demo as the release "demo" in
+    lab-c1 with 3 replicas. Then click "Check my work".
+  links:
+  - title: helm_release
+    url: https://registry.terraform.io/providers/hashicorp/helm/latest/docs/resources/release

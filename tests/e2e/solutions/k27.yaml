@@ -1,0 +1,25 @@
+id: k27
+steps:
+  - apply:
+      - apiVersion: apps/v1
+        kind: Deployment
+        metadata: {name: web}
+        spec:
+          replicas: 1
+          selector:
+            matchLabels: {app: web}
+          template:
+            metadata:
+              labels: {app: web}
+            spec:
+              securityContext: {runAsNonRoot: true}
+              volumes:
+                - name: tmp
+                  emptyDir: {}
+              containers:
+                - name: web
+                  image: nginxinc/nginx-unprivileged:1.27
+                  securityContext: {readOnlyRootFilesystem: true}
+                  volumeMounts:
+                    - {name: tmp, mountPath: /tmp}
+  - run: [kubectl, rollout, status, deployment/web, -n, lab-k27, --timeout=180s]

@@ -1,0 +1,32 @@
+# Lab k37. Needs the three nodes of mq-multi. The Job controller adds the
+# label batch.kubernetes.io/job-name to the Pods of a Job. The taint stays
+# after Reset, and k38 and k39 expect it.
+id: k37
+title: Taints and tolerations
+namespace: lab-k37
+needs: [nodes:3]
+setup: []
+checks:
+  - id: taint
+    say: The node mq-multi-m03 has the taint dedicated with the effect NoSchedule.
+    get: node/mq-multi-m03
+    why: A taint repels each Pod that does not tolerate it. Thus the node is kept for special work.
+    path: '{.spec.taints[?(@.key=="dedicated")].effect}'
+    equals: NoSchedule
+  - id: done
+    say: The Job "gpu-job" has 1 succeeded Pod.
+    get: job/gpu-job
+    why: A Pod that does not tolerate the taint cannot go on the node, and stays Pending when it must go there.
+    path: "{.status.succeeded}"
+    equals: "1"
+  - id: node
+    say: The Pods of "gpu-job" ran on mq-multi-m03.
+    get: pods
+    selector: batch.kubernetes.io/job-name=gpu-job
+    why: A toleration only permits the tainted node. A nodeSelector or a node affinity puts the Pod there.
+    path: "{.items[*].spec.nodeName}"
+    matches: "^mq-multi-m03( mq-multi-m03)*$"
+hints:
+  - "`kubectl taint nodes mq-multi-m03 dedicated=gpu:NoSchedule` adds the taint."
+  - A toleration with key dedicated, operator Equal, value gpu and effect NoSchedule matches the taint.
+  - A nodeSelector with kubernetes.io/hostname mq-multi-m03 puts the Pod on that node.

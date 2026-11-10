@@ -1,0 +1,20 @@
+id: t3
+dir: workspace/t3
+steps:
+- file:
+    name: backend.tf
+    text: "terraform {\n  backend \"kubernetes\" {\n    secret_suffix  = \"t3\"\n    namespace      = \"lab-t3\"\n    config_path    = \"~/.kube/config\"\n    config_context = \"{{context}}\"\n  }\n}\n"
+- file:
+    name: main.tf
+    text: "variable \"teams\" {\n  type = map(string)\n  default = {\n    team-a = \"red\"\n    team-b = \"green\"\n    team-c = \"blue\"\n  }\n}\n\nresource \"kubernetes_config_map_v1\" \"team\" {\n  for_each\
+      \ = var.teams\n  metadata {\n    name      = each.key\n    namespace = \"lab-t3\"\n  }\n  data = { color = each.value }\n}\n\noutput \"team_names\" {\n  value = [for cm in kubernetes_config_map_v1.team\
+      \ : cm.metadata[0].name]\n}\n"
+- run:
+  - terraform
+  - init
+  - -input=false
+- run:
+  - terraform
+  - apply
+  - -auto-approve
+  - -input=false

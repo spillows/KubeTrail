@@ -1,0 +1,67 @@
+id: VII
+title: Debugging
+duration: about 4 hours
+description: Five broken apps. Find each fault with get, describe, logs and events, and repair it. The last app has three faults.
+quests:
+- id: k29
+  type: BOSS
+  tags: [k8s]
+  minutes: 30
+  title: An image that does not pull
+  task: >-
+    Click "Start lab". The Deployment "shop" has 2 replicas, but no Pod
+    starts. Find the fault and repair it, so that 2 replicas are ready. Then
+    click "Check my work".
+  links:
+  - title: Debug Pods
+    url: https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/
+- id: k30
+  type: BOSS
+  tags: [k8s]
+  minutes: 30
+  title: A container in CrashLoopBackOff
+  task: >-
+    Click "Start lab". The Deployment "worker" starts a Pod, but the container
+    stops again and again. Find why it stops and repair the Deployment, so that
+    its Pod is ready and does not restart. Then click "Check my work".
+  links:
+  - title: Debug running Pods
+    url: https://kubernetes.io/docs/tasks/debug/debug-application/debug-running-pod/
+- id: k31
+  type: BOSS
+  tags: [k8s]
+  minutes: 30
+  title: A Pod that stays Pending
+  task: >-
+    Click "Start lab". The Pod of the Deployment "big" stays Pending. Find why
+    the scheduler does not put it on a node, and repair the Deployment so that
+    its Pod is ready. Then click "Check my work".
+  links:
+  - title: Debug Pods, Pending
+    url: https://kubernetes.io/docs/tasks/debug/debug-application/debug-pods/#my-pod-stays-pending
+- id: k32
+  type: BOSS
+  tags: [k8s]
+  minutes: 30
+  title: A Service with no endpoints
+  task: >-
+    Click "Start lab". The Pods of the Deployment "web" are ready, but the
+    Service "web" sends traffic to no Pod. Find the fault and repair it, so
+    that the Service has endpoints. Then click "Check my work".
+  links:
+  - title: Debug Services
+    url: https://kubernetes.io/docs/tasks/debug/debug-application/debug-service/
+- id: k33
+  type: BOSS
+  tags: [k8s]
+  minutes: 60
+  title: Three faults in one app
+  task: >-
+    Click "Start lab". The app "store" has a Deployment, a ConfigMap and a
+    Service. The witness gets http://store, and it is Ready only when it gets
+    a reply. The app has three faults. Find and repair all three, so that the
+    Pod of "store" is ready, the Service has endpoints, and the witness is
+    Ready. Do not change the witness. Then click "Check my work".
+  links:
+  - title: Troubleshooting applications
+    url: https://kubernetes.io/docs/tasks/debug/debug-application/

@@ -1,0 +1,6 @@
+id: h3
+dir: charts/demo
+steps:
+  - file: {name: base.yaml, text: "replicaCount: 2\nimage:\n  tag: \"1.26\"\n"}
+  - file: {name: prod.yaml, text: "replicaCount: 3\n"}
+  - run: [helm, install, site, ., -n, lab-h3, -f, base.yaml, -f, prod.yaml, --set, image.tag=1.27-alpine, --wait, --timeout, 180s]

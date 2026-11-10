@@ -1,0 +1,25 @@
+id: t8
+dir: workspace/t8
+steps:
+- file:
+    name: backend.tf
+    text: "terraform {\n  backend \"kubernetes\" {\n    secret_suffix  = \"t8\"\n    namespace      = \"lab-t8\"\n    config_path    = \"~/.kube/config\"\n    config_context = \"{{context}}\"\n  }\n}\n"
+- file:
+    name: main.tf
+    text: "resource \"kubernetes_deployment_v1\" \"temp\" {\n  metadata {\n    name      = \"temp\"\n    namespace = \"lab-t8\"\n  }\n  spec {\n    replicas = 1\n    selector {\n      match_labels = { app\
+      \ = \"temp\" }\n    }\n    template {\n      metadata {\n        labels = { app = \"temp\" }\n      }\n      spec {\n        container {\n          name  = \"app\"\n          image = \"nginx:1.27\"\
+      \n        }\n      }\n    }\n  }\n}\n"
+- run:
+  - terraform
+  - init
+  - -input=false
+- run:
+  - terraform
+  - apply
+  - -auto-approve
+  - -input=false
+- run:
+  - terraform
+  - destroy
+  - -auto-approve
+  - -input=false

@@ -1,0 +1,25 @@
+id: h8
+dir: charts/demo
+steps:
+- file:
+    name: templates/tests/test-connection.yaml
+    text: "apiVersion: v1\nkind: Pod\nmetadata:\n  name: test-connection\n  annotations:\n    helm.sh/hook: test\nspec:\n  restartPolicy: Never\n  containers:\n    - name: wget\n      image: busybox:1.36\n\
+      \      command: [wget, -qO-, \"http://{{ .Release.Name }}:80\"]\n"
+- run:
+  - helm
+  - install
+  - demo
+  - .
+  - -n
+  - lab-h8
+  - --wait
+  - --timeout
+  - 180s
+- run:
+  - helm
+  - test
+  - demo
+  - -n
+  - lab-h8
+  - --timeout
+  - 120s

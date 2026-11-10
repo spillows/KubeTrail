@@ -1,0 +1,52 @@
+# Lab k21. Setup makes a Deployment whose liveness probe gets a path that
+# nginx does not have. The kubelet restarts each container after one failure.
+# The restarts check reads the restart count of each container of each Pod.
+id: k21
+title: A liveness probe kills a healthy app
+namespace: lab-k21
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: web
+    spec:
+      replicas: 2
+      selector:
+        matchLabels: {app: web}
+      template:
+        metadata:
+          labels: {app: web}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+              ports:
+                - containerPort: 80
+              livenessProbe:
+                httpGet: {path: /healthz, port: 80}
+                periodSeconds: 3
+                failureThreshold: 1
+checks:
+  - id: ready
+    say: The Deployment "web" has 2 ready replicas.
+    get: deployment/web
+    why: A container that the kubelet restarts again and again goes to CrashLoopBackOff and is not Ready.
+    path: "{.status.readyReplicas}"
+    equals: "2"
+  - id: liveness
+    say: The container of "web" still has a liveness probe.
+    get: deployment/web
+    why: A liveness probe restarts a container that is stuck. Repair the probe; do not remove it.
+    path: "{.spec.template.spec.containers[0].livenessProbe}"
+    exists: true
+  - id: restarts
+    say: Each Pod of "web" has 0 restarts.
+    get: pods
+    selector: app=web
+    why: A restart count that increases shows that the probe still fails. New Pods start at 0.
+    path: "{.items[*].status.containerStatuses[*].restartCount}"
+    matches: "^0( 0)*$"
+hints:
+  - "`kubectl describe pod -l app=web` shows the probe failures in Events."
+  - "nginx gives 404 for /healthz. It gives 200 for /."
+  - "`kubectl edit deployment web` lets you change livenessProbe.httpGet.path. The change makes new Pods."

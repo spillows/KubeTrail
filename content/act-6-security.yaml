@@ -1,0 +1,66 @@
+id: VI
+title: Security
+duration: about 3 hours
+description: Give each workload only the permissions that it needs. Control what a Pod can do in the API with RBAC, and what a container can do on the node with a security context and Pod Security.
+quests:
+- id: k25
+  type: READ
+  tags: [k8s]
+  minutes: 40
+  title: Read about ServiceAccounts, RBAC and Pod security
+  task: Read the four concept pages. Write one sentence for each of these questions. What identity does a Pod use when it calls the API? What is the difference between a Role and a RoleBinding? What does runAsNonRoot stop? What are the three Pod Security levels? Then click "Mark done".
+  links:
+  - title: Service Accounts
+    url: https://kubernetes.io/docs/concepts/security/service-accounts/
+  - title: Using RBAC authorization
+    url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+  - title: Configure a security context for a Pod or container
+    url: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+  - title: Pod Security Standards
+    url: https://kubernetes.io/docs/concepts/security/pod-security-standards/
+- id: k26
+  type: LAB
+  tags: [k8s]
+  minutes: 40
+  title: A ServiceAccount that may list Pods and nothing more
+  task: >-
+    Click "Start lab". The lab namespace has the ServiceAccount "pod-reader"
+    and two witnesses that run as it. The witness "list-pods" is Ready only
+    when it can list the Pods of the namespace. The witness "list-secrets" is
+    Ready only when it can list the Secrets. Now neither is Ready. Give
+    "pod-reader" permission to list Pods in the lab namespace, and no more.
+    Then "list-pods" is Ready and "list-secrets" is not. Do not change the
+    witnesses. Then click "Check my work".
+  links:
+  - title: Using RBAC authorization
+    url: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
+  - title: Configure Service Accounts for Pods
+    url: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account/
+- id: k27
+  type: LAB
+  tags: [k8s]
+  minutes: 40
+  title: Run as non-root with a read-only root filesystem
+  task: >-
+    Click "Start lab". Make the Deployment "web" with the image
+    nginxinc/nginx-unprivileged:1.27. Its containers must not run as root, and
+    their root filesystem is read-only. nginx must write some files, thus give
+    it a volume for /tmp. Then click "Check my work".
+  links:
+  - title: Configure a security context for a Pod or container
+    url: https://kubernetes.io/docs/tasks/configure-pod-container/security-context/
+- id: k28
+  type: LAB
+  tags: [k8s]
+  minutes: 40
+  title: The restricted Pod Security level on the lab namespace
+  task: >-
+    Click "Start lab". The lab namespace has the Deployment "legacy". Enforce
+    the Pod Security level restricted on the lab namespace. Then change
+    "legacy" so that the namespace accepts its new Pods, and all its replicas
+    are updated and ready. Then click "Check my work".
+  links:
+  - title: Enforce Pod Security Standards with namespace labels
+    url: https://kubernetes.io/docs/tasks/configure-pod-container/enforce-standards-namespace-labels/
+  - title: Pod Security Standards, restricted
+    url: https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted

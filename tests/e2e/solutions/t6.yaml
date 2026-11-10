@@ -1,0 +1,31 @@
+id: t6
+dir: workspace/t6
+steps:
+- file:
+    name: backend.tf
+    text: "terraform {\n  backend \"kubernetes\" {\n    secret_suffix  = \"t6\"\n    namespace      = \"lab-t6\"\n    config_path    = \"~/.kube/config\"\n    config_context = \"{{context}}\"\n  }\n}\n"
+- file:
+    name: main.tf
+    text: "resource \"kubernetes_deployment_v1\" \"web\" {\n  metadata {\n    name      = \"web-${terraform.workspace}\"\n    namespace = \"lab-t6\"\n  }\n  spec {\n    replicas = 1\n    selector {\n  \
+      \    match_labels = { app = \"web-${terraform.workspace}\" }\n    }\n    template {\n      metadata {\n        labels = { app = \"web-${terraform.workspace}\" }\n      }\n      spec {\n        container\
+      \ {\n          name  = \"app\"\n          image = \"nginx:1.27\"\n        }\n      }\n    }\n  }\n}\n"
+- run:
+  - terraform
+  - init
+  - -input=false
+- run:
+  - terraform
+  - workspace
+  - new
+  - staging
+- run: &id001
+  - terraform
+  - apply
+  - -auto-approve
+  - -input=false
+- run:
+  - terraform
+  - workspace
+  - new
+  - prod
+- run: *id001

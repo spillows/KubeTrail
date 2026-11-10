@@ -1,0 +1,35 @@
+# Lab k22. The checks read the strategy and the ready replicas of the
+# Deployment, and the image to show that the learner did a rollout.
+id: k22
+title: maxSurge and maxUnavailable
+namespace: lab-k22
+setup: []
+checks:
+  - id: ready
+    say: The Deployment "web" has 4 ready replicas.
+    get: deployment/web
+    why: A rollout is complete when all replicas run the new template and are Ready.
+    path: "{.status.readyReplicas}"
+    equals: "4"
+  - id: max-surge
+    say: The rolling update adds 1 Pod at a time (maxSurge 1).
+    get: deployment/web
+    why: maxSurge is the number of Pods more than replicas during a rollout. A low value uses less spare capacity.
+    path: "{.spec.strategy.rollingUpdate.maxSurge}"
+    equals: "1"
+  - id: max-unavailable
+    say: The rolling update stops no Pod before a new Pod is ready (maxUnavailable 0).
+    get: deployment/web
+    why: With maxUnavailable 0, the number of ready Pods never goes below replicas during a rollout.
+    path: "{.spec.strategy.rollingUpdate.maxUnavailable}"
+    equals: "0"
+  - id: image
+    say: The container of "web" has the image nginx:1.28.
+    get: deployment/web
+    why: A change of the Pod template, such as the image, starts a rollout.
+    path: "{.spec.template.spec.containers[0].image}"
+    equals: nginx:1.28
+hints:
+  - "`kubectl create deployment web --image=nginx:1.27 --replicas=4 --dry-run=client -o yaml` writes a file that you can change."
+  - Put maxSurge and maxUnavailable under spec.strategy.rollingUpdate. Use numbers, not percentages.
+  - "`kubectl set image deployment/web nginx=nginx:1.28` starts the rollout. `kubectl rollout status` watches it."

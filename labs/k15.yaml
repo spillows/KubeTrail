@@ -1,0 +1,131 @@
+# Lab k15. It needs Envoy Gateway and the GatewayClass "quest" from
+# install/gateway.yaml. Setup makes "shop" and "blog", each of which replies
+# with its own name, and a witness that gets /shop and /blog through the
+# Service quest-gateway. The learner makes the Gateway and the HTTPRoute
+# "site". The witness is Ready only when each path gets the correct reply.
+id: k15
+title: Route two paths through a Gateway
+namespace: lab-k15
+needs: [gateway]
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: shop
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: shop}
+      template:
+        metadata:
+          labels: {app: shop}
+        spec:
+          containers:
+            - name: shop
+              image: hashicorp/http-echo:1.0
+              args: [-text=shop, -listen=:8080]
+              ports:
+                - containerPort: 8080
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: shop
+    spec:
+      selector: {app: shop}
+      ports:
+        - port: 80
+          targetPort: 8080
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: blog
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: blog}
+      template:
+        metadata:
+          labels: {app: blog}
+        spec:
+          containers:
+            - name: blog
+              image: hashicorp/http-echo:1.0
+              args: [-text=blog, -listen=:8080]
+              ports:
+                - containerPort: 8080
+  - apiVersion: v1
+    kind: Service
+    metadata:
+      name: blog
+    spec:
+      selector: {app: blog}
+      ports:
+        - port: 80
+          targetPort: 8080
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: witness
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: witness}
+      template:
+        metadata:
+          labels: {app: witness}
+        spec:
+          containers:
+            - name: witness
+              image: busybox:1.36
+              command: [sleep, "86400"]
+              readinessProbe:
+                exec:
+                  command:
+                    - sh
+                    - -c
+                    - wget -qO- -T 1 http://quest-gateway.envoy-gateway-system/shop | grep -qx shop && wget -qO- -T 1 http://quest-gateway.envoy-gateway-system/blog | grep -qx blog
+                periodSeconds: 2
+                timeoutSeconds: 3
+                failureThreshold: 1
+checks:
+  - id: class
+    say: The Gateway "site" uses the GatewayClass "quest".
+    get: gateway/site
+    why: The GatewayClass names the controller that runs the Gateway. The class quest also gives the Service the name that the witness gets.
+    path: "{.spec.gatewayClassName}"
+    equals: quest
+  - id: programmed
+    say: The controller programmed the Gateway "site".
+    get: gateway/site
+    why: The controller sets Programmed when its proxy is ready for traffic. kubectl describe gateway site shows the reason when it is not.
+    path: '{.status.conditions[?(@.type=="Programmed")].status}'
+    equals: "True"
+  - id: accepted
+    say: The Gateway accepted the HTTPRoute "site".
+    get: httproute/site
+    why: A Gateway accepts a route only when parentRefs names the Gateway and a listener of the Gateway permits the route.
+    path: '{.status.parents[0].conditions[?(@.type=="Accepted")].status}'
+    equals: "True"
+  - id: refs
+    say: Each backend of the HTTPRoute is a Service that exists.
+    get: httproute/site
+    why: Each backendRef must name a Service in the namespace of the route, and a port of that Service.
+    path: '{.status.parents[0].conditions[?(@.type=="ResolvedRefs")].status}'
+    equals: "True"
+  - id: probe
+    say: The witness still gets both paths through quest-gateway.
+    get: deployment/witness
+    why: The witness tests the routes. A change of the witness does not prove that the routes work.
+    path: "{.spec.template.spec.containers[0].readinessProbe.exec.command[2]}"
+    equals: wget -qO- -T 1 http://quest-gateway.envoy-gateway-system/shop | grep -qx shop && wget -qO- -T 1 http://quest-gateway.envoy-gateway-system/blog | grep -qx blog
+  - id: witness
+    say: The witness is Ready.
+    get: deployment/witness
+    why: The witness is Ready only when /shop gets the reply shop and /blog gets the reply blog.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+hints:
+  - "`kubectl get gateway site` shows if the Gateway is Programmed. `kubectl describe httproute site` shows if the Gateway accepted the route, and why not."
+  - "The Gateway has `gatewayClassName: quest` and one listener with `protocol: HTTP` and `port: 80`. The HTTPRoute has `parentRefs` with `name: site`."
+  - "Each rule of the HTTPRoute has `matches` with `path: {type: PathPrefix, value: /shop}`, and `backendRefs` with the name of the Service and `port: 80`."
+  - "To open the site in a browser, run `kubectl port-forward -n envoy-gateway-system service/quest-gateway 8080:80`, then open http://localhost:8080/shop."

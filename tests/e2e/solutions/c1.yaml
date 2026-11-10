@@ -1,0 +1,22 @@
+id: c1
+dir: workspace/c1
+steps:
+- copy:
+    from: charts/demo
+    to: demo-chart
+- file:
+    name: backend.tf
+    text: "terraform {\n  backend \"kubernetes\" {\n    secret_suffix  = \"c1\"\n    namespace      = \"lab-c1\"\n    config_path    = \"~/.kube/config\"\n    config_context = \"{{context}}\"\n  }\n}\n"
+- file:
+    name: main.tf
+    text: "resource \"helm_release\" \"demo\" {\n  name      = \"demo\"\n  namespace = \"lab-c1\"\n  chart     = \"./demo-chart\"\n  values    = [yamlencode({ replicaCount = 3 })]\n  wait      = true\n\
+      }\n"
+- run:
+  - terraform
+  - init
+  - -input=false
+- run:
+  - terraform
+  - apply
+  - -auto-approve
+  - -input=false

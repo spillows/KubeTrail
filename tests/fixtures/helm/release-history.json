@@ -1,0 +1,63 @@
+{
+  "apiVersion": "v1",
+  "items": [
+    {
+      "apiVersion": "v1",
+      "data": {
+        "release": "<omitted>"
+      },
+      "kind": "Secret",
+      "metadata": {
+        "labels": {
+          "modifiedAt": "1794130208",
+          "name": "demo",
+          "owner": "helm",
+          "status": "superseded",
+          "version": "1"
+        },
+        "name": "sh.helm.release.v1.demo.v1",
+        "namespace": "fixture-h"
+      },
+      "type": "helm.sh/release.v1"
+    },
+    {
+      "apiVersion": "v1",
+      "data": {
+        "release": "<omitted>"
+      },
+      "kind": "Secret",
+      "metadata": {
+        "labels": {
+          "modifiedAt": "1794130208",
+          "name": "demo",
+          "owner": "helm",
+          "status": "superseded",
+          "version": "2"
+        },
+        "name": "sh.helm.release.v1.demo.v2",
+        "namespace": "fixture-h"
+      },
+      "type": "helm.sh/release.v1"
+    },
+    {
+      "apiVersion": "v1",
+      "data": {
+        "release": "<omitted>"
+      },
+      "kind": "Secret",
+      "metadata": {
+        "labels": {
+          "modifiedAt": "1794130208",
+          "name": "demo",
+          "owner": "helm",
+          "status": "deployed",
+          "version": "3"
+        },
+        "name": "sh.helm.release.v1.demo.v3",
+        "namespace": "fixture-h"
+      },
+      "type": "helm.sh/release.v1"
+    }
+  ],
+  "kind": "List"
+}

@@ -1,0 +1,47 @@
+# Lab t9. Boss. One module for api and worker, applied in the workspaces staging and prod.
+id: t9
+title: Two environments from one module
+namespace: lab-t9
+needs: [terraform]
+setup: []
+checks:
+  - id: api-staging
+    say: The Deployment "api-staging" has 1 ready replica.
+    get: deployment/api-staging
+    why: One module and one workspace for each environment give the same objects with different names.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+  - id: worker-staging
+    say: The Deployment "worker-staging" has 1 ready replica.
+    get: deployment/worker-staging
+    why: One module and one workspace for each environment give the same objects with different names.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+  - id: api-prod
+    say: The Deployment "api-prod" has 1 ready replica.
+    get: deployment/api-prod
+    why: One module and one workspace for each environment give the same objects with different names.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+  - id: worker-prod
+    say: The Deployment "worker-prod" has 1 ready replica.
+    get: deployment/worker-prod
+    why: One module and one workspace for each environment give the same objects with different names.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+  - id: state-staging
+    say: The state Secret "tfstate-staging-t9" exists in the lab namespace.
+    get: secret/tfstate-staging-t9
+    why: Each environment has its own state, so a change in staging cannot change prod.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+  - id: state-prod
+    say: The state Secret "tfstate-prod-t9" exists in the lab namespace.
+    get: secret/tfstate-prod-t9
+    why: Each environment has its own state, so a change in staging cannot change prod.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+hints:
+  - "Write one module in `workspace/t9/modules/app/` and call it two times: api and worker."
+  - "Use `${terraform.workspace}` in the names."
+  - "`terraform workspace new staging`, apply, then `terraform workspace new prod`, apply."

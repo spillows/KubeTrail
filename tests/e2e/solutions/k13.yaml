@@ -1,0 +1,4 @@
+id: k13
+steps:
+  - run: [kubectl, expose, deployment, web, --name=web-internal, --port=80, -n, lab-k13]
+  - run: [kubectl, create, service, nodeport, web-external, "--tcp=80:80", --node-port=30080, -n, lab-k13]

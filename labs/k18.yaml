@@ -1,0 +1,58 @@
+# Lab k18. Setup makes a witness that mounts the claim "data" and is Ready
+# only when /data/marker exists. The learner makes the claim and writes the
+# file from a different Pod. The probe check makes sure that the learner did
+# not change the probe of the witness.
+id: k18
+title: Data in a claim outlives the Pod that wrote it
+namespace: lab-k18
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: witness
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: witness}
+      template:
+        metadata:
+          labels: {app: witness}
+        spec:
+          volumes:
+            - name: data
+              persistentVolumeClaim: {claimName: data}
+          containers:
+            - name: witness
+              image: busybox:1.36
+              command: [sleep, "86400"]
+              volumeMounts:
+                - {name: data, mountPath: /data}
+              readinessProbe:
+                exec:
+                  command: [cat, /data/marker]
+                periodSeconds: 2
+                failureThreshold: 1
+checks:
+  - id: bound
+    say: The claim "data" is Bound.
+    get: persistentvolumeclaim/data
+    why: A claim is Bound when a PersistentVolume gives it storage. A Pod that mounts a claim that is not Bound stays Pending.
+    path: "{.status.phase}"
+    equals: Bound
+  - id: probe
+    say: The witness still reads /data/marker.
+    get: deployment/witness
+    why: The witness tests the file in the claim. A change of the witness does not prove that the data is kept.
+    path: "{.spec.template.spec.containers[0].readinessProbe.exec.command[1]}"
+    equals: /data/marker
+  - id: witness
+    say: The witness is Ready.
+    get: deployment/witness
+    why: The witness is Ready only when it reads the file from the claim. The Pod that wrote the file can stop; the data stays.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+hints:
+  - "`kubectl describe pod -l app=witness` shows why the Pod is Pending."
+  - A claim has accessModes [ReadWriteOnce] and resources.requests.storage. Without storageClassName it uses the default StorageClass.
+  - "`kubectl run` cannot mount a claim. Write the writer Pod in a YAML file, with a command such as `sh -c 'echo hello > /data/marker; sleep 3600'`."
+  - After the file exists, delete the writer Pod with `kubectl delete pod`.

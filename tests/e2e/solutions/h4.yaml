@@ -1,0 +1,33 @@
+id: h4
+dir: charts/demo
+steps:
+- file:
+    name: templates/deployment.yaml
+    text: "apiVersion: apps/v1\nkind: Deployment\nmetadata:\n  name: {{ .Release.Name }}\n  labels:\n    {{- include \"demo.selectorLabels\" . | nindent 4 }}\nspec:\n  replicas: {{ .Values.replicaCount\
+      \ }}\n  selector:\n    matchLabels:\n      {{- include \"demo.selectorLabels\" . | nindent 6 }}\n  template:\n    metadata:\n      annotations:\n        checksum/config: {{ include (print $.Template.BasePath\
+      \ \"/configmap.yaml\") . | sha256sum }}\n      labels:\n        {{- include \"demo.selectorLabels\" . | nindent 8 }}\n    spec:\n      containers:\n        - name: web\n          image: \"{{ .Values.image.repository\
+      \ }}:{{ .Values.image.tag }}\"\n          ports:\n            - name: http\n              containerPort: 80\n          env:\n            - name: GREETING\n              valueFrom:\n              \
+      \  configMapKeyRef:\n                  name: {{ .Release.Name }}-config\n                  key: greeting\n          readinessProbe:\n            httpGet:\n              path: /\n              port:\
+      \ http\n"
+- run:
+  - helm
+  - install
+  - demo
+  - .
+  - -n
+  - lab-h4
+  - --wait
+  - --timeout
+  - 180s
+- run:
+  - helm
+  - upgrade
+  - demo
+  - .
+  - -n
+  - lab-h4
+  - --set
+  - config.greeting=bonjour
+  - --wait
+  - --timeout
+  - 180s

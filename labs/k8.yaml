@@ -1,0 +1,36 @@
+# Lab k8. The checks read the ConfigMap, and the Pod template of the
+# Deployment for envFrom and for a configMap volume.
+id: k8
+title: A ConfigMap as variables and as a file
+namespace: lab-k8
+setup: []
+checks:
+  - id: configmap
+    say: The ConfigMap "app-config" has GREETING=hello.
+    get: configmap/app-config
+    why: A ConfigMap keeps settings out of the image. Thus one image can run with different settings.
+    path: "{.data.GREETING}"
+    equals: hello
+  - id: ready
+    say: The Deployment "web" has 1 or more ready replicas.
+    get: deployment/web
+    why: A Pod that reads a ConfigMap that does not exist does not start.
+    path: "{.status.readyReplicas}"
+    atLeast: 1
+  - id: env-from
+    say: The container of "web" gets "app-config" as environment variables.
+    get: deployment/web
+    why: envFrom makes each key a variable. The Pod reads variables only at start, thus a change needs a new Pod.
+    path: "{.spec.template.spec.containers[*].envFrom[*].configMapRef.name}"
+    equals: app-config
+  - id: volume
+    say: The Pods of "web" mount "app-config" as a volume.
+    get: deployment/web
+    why: A configMap volume makes each key a file. The kubelet updates the files after a change of the ConfigMap.
+    path: "{.spec.template.spec.volumes[*].configMap.name}"
+    equals: app-config
+hints:
+  - Use `kubectl create configmap` with --from-literal.
+  - "`kubectl create deployment web --image=nginx:1.27 --dry-run=client -o yaml` writes a file that you can change."
+  - Add `envFrom` with a `configMapRef` to the container. Add a volume with `configMap` to the Pod, and a `volumeMounts` entry to the container.
+  - Use `kubectl exec deploy/web -- env` and `kubectl exec deploy/web -- ls /etc/app` to find them.

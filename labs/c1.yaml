@@ -1,0 +1,30 @@
+# Lab c1. Capstone. The Helm provider of Terraform installs charts/demo. No helm command.
+id: c1
+title: Terraform installs a Helm release
+namespace: lab-c1
+needs: [terraform]
+setup: []
+checks:
+  - id: release
+    say: The release "demo" is deployed.
+    get: secrets
+    selector: owner=helm,name=demo,status=deployed
+    why: The Helm provider uses the Helm library, so it keeps the release in the same Secret as the helm command.
+    path: "{.items[*].metadata.labels.version}"
+    atLeast: 1
+  - id: replicas
+    say: The Deployment "demo" has 3 replicas.
+    get: deployment/demo
+    why: Terraform gives the values to the chart, so the chart makes 3 replicas.
+    path: "{.spec.replicas}"
+    equals: "3"
+  - id: state
+    say: The state Secret "tfstate-default-c1" exists in the lab namespace.
+    get: secret/tfstate-default-c1
+    why: Terraform owns the release. Change it with terraform apply, not with helm upgrade.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+hints:
+  - "`resource \"helm_release\" \"demo\"` with `chart = \"../../charts/demo\"` and `namespace = \"lab-c1\"`."
+  - "`values = [yamlencode({ replicaCount = 3 })]` sets the replica count."
+  - "`helm list -n lab-c1` shows the release that Terraform made."

@@ -1,0 +1,6 @@
+id: k30
+steps:
+  - run: [kubectl, set, env, deployment/worker, QUEUE=orders, -n, lab-k30]
+  - run: [kubectl, rollout, status, deployment/worker, -n, lab-k30, --timeout=180s]
+  - run: [kubectl, delete, pods, -l, app=worker, --wait=true, -n, lab-k30]
+  - run: [kubectl, wait, --for=condition=Ready, pods, -l, app=worker, -n, lab-k30, --timeout=120s]

@@ -1,0 +1,23 @@
+id: h10
+dir: charts/broken
+steps:
+- run:
+  - helm
+  - install
+  - shop
+  - .
+  - -n
+  - lab-h10
+- file:
+    name: templates/service.yaml
+    text: "apiVersion: v1\nkind: Service\nmetadata:\n  name: {{ .Release.Name }}\nspec:\n  selector:\n    app: {{ .Release.Name }}\n  ports:\n    - port: 80\n      targetPort: 80\n"
+- run:
+  - helm
+  - upgrade
+  - shop
+  - .
+  - -n
+  - lab-h10
+  - --wait
+  - --timeout
+  - 180s

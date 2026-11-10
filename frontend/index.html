@@ -1,0 +1,35 @@
+<title>KubeTrail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="styles.css">
+
+<div class="shell">
+<aside class="side" aria-label="Course">
+  <h1><a href="#">KubeTrail</a></h1>
+  <p class="sub">Learn on minikube</p>
+  <p class="total"><b id="doneText">0 of 0 quests done</b> · <span id="donePct">0%</span></p>
+  <div class="track" role="progressbar" aria-labelledby="doneText" id="doneBar" aria-valuemin="0" aria-valuenow="0"><div class="fill" id="doneFill"></div></div>
+  <span class="save" id="saveState">loading progress…</span>
+  <nav class="actnav" aria-labelledby="navLbl"><p class="navlbl" id="navLbl">Course</p><ol id="actNav"></ol></nav>
+  <div class="cluster" id="clusterState" data-level="wait" role="status" aria-live="polite"><span class="cdot" aria-hidden="true"></span><span class="ctext">examining the cluster…</span></div>
+</aside>
+
+<main class="page">
+  <div class="setup" id="setup" role="alert" hidden></div>
+  <section class="home" id="home">
+    <h2>Course</h2>
+    <p class="lede">Learn Kubernetes on your Mac with hands-on labs on a local <code>minikube</code> cluster. You type the <code>kubectl</code> commands. The app checks your work.</p>
+    <div class="rules">
+      <div><b>READ</b> Read the docs or the chapter. Write notes in your own words.</div>
+      <div><b>LAB</b> Do the task on minikube with kubectl. The app checks the cluster, then marks the quest done.</div>
+    </div>
+    <p class="hint">Each act has its own page. Select an act in the list, or start with the next quest.</p>
+    <div class="next" id="nextUp"><span class="lbl">Next up</span><span id="nextQuest">…</span></div>
+  </section>
+  <div id="acts"></div>
+  <footer>The app keeps your progress in progress.json in the repo folder. More quests and tracks are in ROADMAP.md.</footer>
+</main>
+</div>
+
+<script type="module" src="app.js"></script>

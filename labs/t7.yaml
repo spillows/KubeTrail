@@ -1,0 +1,29 @@
+# Lab t7. Setup makes the ConfigMap "platform". A data source reads it.
+id: t7
+title: A data source reads an object that Terraform did not make
+namespace: lab-t7
+needs: [terraform]
+setup:
+  - apiVersion: v1
+    kind: ConfigMap
+    metadata:
+      name: platform
+    data:
+      region: eu-west-1
+checks:
+  - id: region
+    say: The ConfigMap "app" holds the region "eu-west-1".
+    get: configmap/app
+    why: A data source reads an object at each plan. Terraform does not own it and does not change it.
+    path: "{.data.region}"
+    equals: eu-west-1
+  - id: state
+    say: The state Secret "tfstate-default-t7" exists in the lab namespace.
+    get: secret/tfstate-default-t7
+    why: The state holds the resources and the last values of the data sources.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+hints:
+  - "`data \"kubernetes_config_map_v1\" \"platform\"` with the name and namespace in `metadata` reads the ConfigMap."
+  - "`data.kubernetes_config_map_v1.platform.data.region` gives the value."
+  - Do not write the region in your files. Read it from the cluster.

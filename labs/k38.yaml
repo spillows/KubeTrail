@@ -1,0 +1,18 @@
+# Lab k38. Needs the three nodes of mq-multi. mq-multi-m03 has the taint from
+# k37, thus the DaemonSet needs a toleration for 3 ready Pods.
+id: k38
+title: A DaemonSet on each node
+namespace: lab-k38
+needs: [nodes:3]
+setup: []
+checks:
+  - id: ready
+    say: The DaemonSet "node-agent" has 3 ready Pods.
+    get: daemonset/node-agent
+    why: A DaemonSet puts one Pod on each node that it can use. A tainted node needs a toleration.
+    path: "{.status.numberReady}"
+    equals: "3"
+hints:
+  - "`kubectl create` cannot make a DaemonSet. Write it in a YAML file. It is like a Deployment without replicas."
+  - "`kubectl get daemonset node-agent` shows DESIRED and READY. If they are 2, look at the taints of the nodes."
+  - A toleration with operator Exists and no key tolerates all taints.

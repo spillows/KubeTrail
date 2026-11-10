@@ -1,0 +1,134 @@
+id: IX
+title: Terraform
+duration: about 6 hours
+description: Describe Kubernetes objects in Terraform. Keep the state in the cluster, and use variables, for_each, modules, workspaces and data sources.
+quests:
+- id: t1
+  type: READ
+  tags: [tf]
+  minutes: 40
+  title: Read about the workflow, state and backends
+  task: Read the three pages. Write one sentence for each of these questions. What do init, plan and apply do? What is in the state, and why does Terraform need it? Why does a team keep the state in a remote backend, not on a laptop? Then click "Mark done".
+  links:
+  - title: The core Terraform workflow
+    url: https://developer.hashicorp.com/terraform/intro/core-workflow
+  - title: State
+    url: https://developer.hashicorp.com/terraform/language/state
+  - title: The kubernetes backend
+    url: https://developer.hashicorp.com/terraform/language/backend/kubernetes
+- id: t2
+  type: LAB
+  tags: [tf]
+  minutes: 40
+  title: The cluster backend and the first resources
+  task: >-
+    Click "Start lab". Work in workspace/t2/. Add a kubernetes backend with
+    the namespace lab-t2, the secret_suffix t2, config_path "~/.kube/config"
+    and this line: config_context = "minikube". Then make the ConfigMap
+    "app-config" with greeting "hello", and the Deployment "web" with 2
+    replicas of nginx:1.27, both in lab-t2. Apply the configuration. Terraform
+    does not make the namespace. After "Reset", click "Start lab" again before
+    you apply. Then click "Check my work".
+  links:
+  - title: The kubernetes backend
+    url: https://developer.hashicorp.com/terraform/language/backend/kubernetes
+  - title: kubernetes_deployment_v1
+    url: https://registry.terraform.io/providers/hashicorp/kubernetes/latest/docs/resources/deployment_v1
+- id: t3
+  type: LAB
+  tags: [tf]
+  minutes: 40
+  title: Variables, for_each and outputs
+  task: >-
+    Click "Start lab". Work in workspace/t3/, with the backend of t2 but the
+    namespace lab-t3 and the secret_suffix t3. Write one map variable with
+    the teams team-a = red, team-b = green and team-c = blue. Make one
+    ConfigMap for each team, with the name of the team and its value in the
+    key color. Add an output with the names of the ConfigMaps. Apply, and read
+    the output. Then click "Check my work".
+  links:
+  - title: The for_each meta-argument
+    url: https://developer.hashicorp.com/terraform/language/meta-arguments/for_each
+- id: t4
+  type: READ
+  tags: [tf]
+  minutes: 30
+  title: Read about modules
+  task: Read the two pages. Write one sentence for each of these questions. What is a module? What does the root module give to a child module, and what does it get back? When do you write a module? Then click "Mark done".
+  links:
+  - title: Modules
+    url: https://developer.hashicorp.com/terraform/language/modules
+  - title: Module development
+    url: https://developer.hashicorp.com/terraform/language/modules/develop
+- id: t5
+  type: LAB
+  tags: [tf]
+  minutes: 45
+  title: A local module, called two times
+  task: >-
+    Click "Start lab". Work in workspace/t5/, with the namespace lab-t5 and
+    the secret_suffix t5 in the backend. Write a module in
+    workspace/t5/modules/app/ that makes a Deployment and a Service with the
+    same name. Call the module two times, so that the Deployments "frontend"
+    and "backend" are ready, each with its Service. Then click "Check my
+    work".
+  links:
+  - title: Modules
+    url: https://developer.hashicorp.com/terraform/language/modules
+- id: t6
+  type: LAB
+  tags: [tf]
+  minutes: 40
+  title: "Workspaces: staging and prod in one namespace"
+  task: >-
+    Click "Start lab". Work in workspace/t6/, with the namespace lab-t6 and
+    the secret_suffix t6 in the backend. Write one Deployment whose name holds
+    the name of the current Terraform workspace. Apply it in a workspace
+    "staging" and in a workspace "prod", so that "web-staging" and "web-prod"
+    exist, each with its own state. Then click "Check my work".
+  links:
+  - title: Workspaces
+    url: https://developer.hashicorp.com/terraform/language/state/workspaces
+- id: t7
+  type: LAB
+  tags: [tf]
+  minutes: 30
+  title: A data source reads an object that Terraform did not make
+  task: >-
+    Click "Start lab". The lab makes the ConfigMap "platform" with a region.
+    Work in workspace/t7/, with the namespace lab-t7 and the secret_suffix t7
+    in the backend. Read "platform" with a data source, and make the ConfigMap
+    "app" with the same region in the key region. Do not write the region in
+    your files. Then click "Check my work".
+  links:
+  - title: Data sources
+    url: https://developer.hashicorp.com/terraform/language/data-sources
+- id: t8
+  type: LAB
+  tags: [tf]
+  minutes: 20
+  title: terraform destroy as a step
+  task: >-
+    Click "Start lab". Work in workspace/t8/, with the namespace lab-t8 and
+    the secret_suffix t8 in the backend. Make the Deployment "temp" with
+    Terraform. Then remove all the resources of the configuration with
+    Terraform, so that "temp" does not exist and the state Secret stays. Then
+    click "Check my work".
+  links:
+  - title: terraform destroy
+    url: https://developer.hashicorp.com/terraform/cli/commands/destroy
+- id: t9
+  type: BOSS
+  tags: [tf]
+  minutes: 60
+  title: Two environments from one module
+  task: >-
+    Click "Start lab". Work in workspace/t9/, with the namespace lab-t9 and
+    the secret_suffix t9 in the backend. Write one module, and call it for an
+    "api" and a "worker". Apply the configuration in the workspaces "staging"
+    and "prod", so that the Deployments "api-staging", "worker-staging",
+    "api-prod" and "worker-prod" are ready, and each environment has its own
+    state. Then click "Check my work".
+  links:
+  - title: Workspaces
+    url: https://developer.hashicorp.com/terraform/language/state/workspaces

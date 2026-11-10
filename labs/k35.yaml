@@ -1,0 +1,37 @@
+# Lab k35. Needs the three nodes of mq-multi. The label on the node stays
+# after Reset, because Reset deletes only the lab namespace.
+id: k35
+title: Node labels and node affinity
+namespace: lab-k35
+needs: [nodes:3]
+setup: []
+checks:
+  - id: label
+    say: The node mq-multi-m02 has the label disk=ssd.
+    get: node/mq-multi-m02
+    why: Node affinity selects nodes by their labels. A node gets labels from the cluster and from you.
+    path: "{.metadata.labels.disk}"
+    equals: ssd
+  - id: affinity
+    say: The Pods of "db" have a required node affinity on the label disk.
+    get: deployment/db
+    why: Required affinity stops the scheduler from using other nodes. A nodeName skips the scheduler and its checks.
+    path: "{.spec.template.spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[*].matchExpressions[*].key}"
+    equals: disk
+  - id: ready
+    say: The Deployment "db" has 2 ready replicas.
+    get: deployment/db
+    why: When no node matches a required affinity, the Pods stay Pending.
+    path: "{.status.readyReplicas}"
+    equals: "2"
+  - id: node
+    say: Each Pod of "db" runs on mq-multi-m02.
+    get: pods
+    selector: app=db
+    why: Only mq-multi-m02 has the label disk=ssd.
+    path: "{.items[*].spec.nodeName}"
+    matches: "^mq-multi-m02( mq-multi-m02)*$"
+hints:
+  - "`kubectl label node mq-multi-m02 disk=ssd` adds the label. `kubectl get nodes --show-labels` shows the labels."
+  - Put spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution in the Pod template, with a matchExpressions entry for key disk, operator In and values [ssd].
+  - "`kubectl get pods -o wide` shows the node of each Pod."

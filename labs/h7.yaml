@@ -1,0 +1,23 @@
+# Lab h7. A Job with a pre-install hook annotation. Helm runs it before the other objects.
+id: h7
+title: A hook Job that runs before the install
+namespace: lab-h7
+needs: [helm]
+setup: []
+checks:
+  - id: hook
+    say: The Job "migrate" is a pre-install hook.
+    get: job/migrate
+    why: The helm.sh/hook annotation tells Helm to run the object before the install, not with it.
+    path: '{.metadata.annotations.helm\.sh/hook}'
+    matches: ".*pre-install.*"
+  - id: succeeded
+    say: The Job "migrate" has 1 succeeded Pod.
+    get: job/migrate
+    why: Helm waits for a hook Job to complete before it installs the other objects.
+    path: "{.status.succeeded}"
+    equals: "1"
+hints:
+  - "`cp -r charts/demo workspace/h7` makes the copy. Add a template file for the Job in `workspace/h7/templates/`."
+  - "The Job needs `metadata.annotations` with `helm.sh/hook: pre-install`, and `restartPolicy: Never`."
+  - "`busybox:1.36` with `command: [echo, migrated]` is a sufficient container."

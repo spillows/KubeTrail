@@ -1,0 +1,4 @@
+id: k29
+steps:
+  - run: [kubectl, set, image, deployment/shop, shop=nginx:1.27, -n, lab-k29]
+  - run: [kubectl, rollout, status, deployment/shop, -n, lab-k29, --timeout=180s]

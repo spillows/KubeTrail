@@ -1,0 +1,87 @@
+# Lab k26. The witnesses use registry.k8s.io/kubectl, which has no shell.
+# "kubectl proxy" keeps the container running without API permissions. The
+# readiness probe of each witness lists one resource with the token of the
+# ServiceAccount "pod-reader".
+id: k26
+title: A ServiceAccount that may list Pods and nothing more
+namespace: lab-k26
+setup:
+  - apiVersion: v1
+    kind: ServiceAccount
+    metadata:
+      name: pod-reader
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: list-pods
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: list-pods}
+      template:
+        metadata:
+          labels: {app: list-pods}
+        spec:
+          serviceAccountName: pod-reader
+          containers:
+            - name: witness
+              image: registry.k8s.io/kubectl:v1.34.1
+              command: [kubectl, proxy, --port=8001]
+              readinessProbe:
+                exec:
+                  command: [kubectl, get, pods]
+                periodSeconds: 3
+                timeoutSeconds: 3
+                failureThreshold: 1
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: list-secrets
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: list-secrets}
+      template:
+        metadata:
+          labels: {app: list-secrets}
+        spec:
+          serviceAccountName: pod-reader
+          containers:
+            - name: witness
+              image: registry.k8s.io/kubectl:v1.34.1
+              command: [kubectl, proxy, --port=8001]
+              readinessProbe:
+                exec:
+                  command: [kubectl, get, secrets]
+                periodSeconds: 3
+                timeoutSeconds: 3
+                failureThreshold: 1
+checks:
+  - id: pods-account
+    say: The witness "list-pods" still runs as "pod-reader".
+    get: deployment/list-pods
+    why: The witness tests the permissions of "pod-reader". A different ServiceAccount does not prove them.
+    path: "{.spec.template.spec.serviceAccountName}"
+    equals: pod-reader
+  - id: secrets-account
+    say: The witness "list-secrets" still runs as "pod-reader", with 1 replica.
+    get: deployment/list-secrets
+    why: The lab tests the limit of the permissions with this witness. Do not change it, delete it or scale it to 0.
+    path: "{.spec.template.spec.serviceAccountName} {.spec.replicas}"
+    equals: pod-reader 1
+  - id: list-pods
+    say: The witness "list-pods" is Ready.
+    get: deployment/list-pods
+    why: A ServiceAccount has no permissions in a namespace until a RoleBinding gives it a Role.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+  - id: list-secrets
+    say: The witness "list-secrets" is not Ready.
+    get: deployment/list-secrets
+    why: The Role must permit only what the workload needs. Secrets often hold passwords and tokens.
+    path: "{.status.readyReplicas}"
+    exists: false
+hints:
+  - "`kubectl auth can-i list pods --as=system:serviceaccount:lab-k26:pod-reader` tests a permission."
+  - "`kubectl create role` with --verb=list and --resource=pods makes a Role. Use only the verbs and resources that the witness needs."
+  - "`kubectl create rolebinding` with --role and --serviceaccount=lab-k26:pod-reader gives the Role to the ServiceAccount."

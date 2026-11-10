@@ -1,0 +1,23 @@
+# Python
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.pytest_cache/
+
+# IDE / OS
+.idea/
+.DS_Store
+
+# Local learner state (never commit)
+progress.json
+progress.json.tmp
+
+# Local Claude Code instructions (never commit)
+CLAUDE.local.md
+
+# The work of the learner in a Terraform or Helm lab (never commit).
+# The repository holds only versions.tf and providers.tf of each lab.
+workspace/*/*
+!workspace/*/versions.tf
+!workspace/*/providers.tf

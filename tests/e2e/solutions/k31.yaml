@@ -1,0 +1,4 @@
+id: k31
+steps:
+  - run: [kubectl, set, resources, deployment, big, "--requests=cpu=100m,memory=64Mi", -n, lab-k31]
+  - run: [kubectl, rollout, status, deployment/big, -n, lab-k31, --timeout=180s]

@@ -1,0 +1,29 @@
+# Lab h3. Two values files and --set. The last file wins, and --set wins over all files.
+id: h3
+title: Values files and --set
+namespace: lab-h3
+needs: [helm]
+setup: []
+checks:
+  - id: replicas
+    say: The Deployment "site" has 3 replicas.
+    get: deployment/site
+    why: When two values files set the same key, Helm uses the value from the last file.
+    path: "{.spec.replicas}"
+    equals: "3"
+  - id: image
+    say: The Deployment "site" uses the image nginx:1.27-alpine.
+    get: deployment/site
+    why: A value from --set wins over the same value in each values file.
+    path: "{.spec.template.spec.containers[0].image}"
+    equals: nginx:1.27-alpine
+  - id: ready
+    say: The Deployment "site" has 3 ready replicas.
+    get: deployment/site
+    why: The release is correct only when its Pods start.
+    path: "{.status.readyReplicas}"
+    equals: "3"
+hints:
+  - "`helm show values charts/demo` shows the keys of the chart: `replicaCount` and `image.tag`."
+  - "`-f base.yaml -f prod.yaml` gives two values files. The order is important."
+  - "`helm get values site -n lab-h3 --all` shows the values that Helm used."

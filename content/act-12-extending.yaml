@@ -1,0 +1,45 @@
+id: XII
+title: Extending
+duration: about 2 hours
+description: Add your own types to the Kubernetes API, and learn which parts of the control plane do the work that you saw in the labs.
+quests:
+- id: k40
+  type: READ
+  tags: [k8s]
+  minutes: 40
+  title: Read about custom resources and operators
+  task: Read the three concept pages. Write one sentence for each of these questions. What does a CustomResourceDefinition add to the API? What does a custom resource do when no controller reads it? What does an operator add? Then click "Mark done".
+  links:
+  - title: Custom resources
+    url: https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/
+  - title: Extend the Kubernetes API with CustomResourceDefinitions
+    url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+  - title: Operator pattern
+    url: https://kubernetes.io/docs/concepts/extend-kubernetes/operator/
+- id: k41
+  type: LAB
+  tags: [k8s]
+  minutes: 40
+  title: A CRD and a custom resource
+  task: >-
+    Use the mq-multi profile. Click "Start lab". Make the
+    CustomResourceDefinition "widgets.quest.example.com", with the group
+    quest.example.com, the kind Widget, the version v1 and the scope
+    Namespaced. Its schema has an integer field spec.size. Then make the Widget
+    "first" with size 3 in the lab namespace. Find it with kubectl get widgets.
+    The CRD is cluster-wide, thus "Reset" does not remove it. Then click
+    "Check my work".
+  links:
+  - title: Extend the Kubernetes API with CustomResourceDefinitions
+    url: https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/
+- id: k42
+  type: READ
+  tags: [k8s]
+  minutes: 40
+  title: Read about the control plane
+  task: Read the two concept pages. Write one sentence for each component. What do the API server, etcd, the scheduler, the controller manager and the kubelet do? Which of them made the Pods of your Deployments, and which put them on a node? Then click "Mark done".
+  links:
+  - title: Kubernetes components
+    url: https://kubernetes.io/docs/concepts/overview/components/
+  - title: Controllers
+    url: https://kubernetes.io/docs/concepts/architecture/controller/

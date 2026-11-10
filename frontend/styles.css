@@ -1,0 +1,195 @@
+/* Layout: a left panel and one page. The panel shows the total, a link to each
+   act with its progress, and the state of the cluster. The page shows the course
+   page or one act. The markers use terraform plan symbols: + is done, ~ is next, · is later. */
+:root{
+  --bg:#f3f5f7; --surface:#ffffff; --ink:#14202b; --muted:#5b6b78; --line:#d9e0e6;
+  --accent:#2f5bd3; --accent-soft:#e5ecfc;
+  --tf:#6a4bc4; --helm:#0f7d86; --k8s:#2f5bd3; --int:#b4561b;
+  --done:#1f7a4a; --done-soft:#e3f3ea; --boss:#8a2f4b; --boss-soft:#f7e6ec;
+  --display:"Bricolage Grotesque",ui-sans-serif,system-ui,sans-serif;
+  --body:"IBM Plex Sans",ui-sans-serif,system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151b; --surface:#16202a; --ink:#e4ebf1; --muted:#93a3b1; --line:#283643;
+  --accent:#86a6ff; --accent-soft:#1d2a47;
+  --tf:#ad97ff; --helm:#4fc4cc; --k8s:#86a6ff; --int:#f0a06a;
+  --done:#5fd197; --done-soft:#15301f; --boss:#f08bab; --boss-soft:#3a1a25; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151b; --surface:#16202a; --ink:#e4ebf1; --muted:#93a3b1; --line:#283643;
+  --accent:#86a6ff; --accent-soft:#1d2a47;
+  --tf:#ad97ff; --helm:#4fc4cc; --k8s:#86a6ff; --int:#f0a06a;
+  --done:#5fd197; --done-soft:#15301f; --boss:#f08bab; --boss-soft:#3a1a25; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.55;margin:0}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.shell{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;align-self:start;height:100vh;overflow-y:auto;display:flex;flex-direction:column;gap:6px;padding:28px 16px 20px max(16px,env(safe-area-inset-left,0px));background:var(--surface);border-right:1px solid var(--line)}
+.page{max-width:900px;width:100%;margin:0 auto;padding:28px max(16px,env(safe-area-inset-right,0px)) 0 32px}
+h1{font-family:var(--display);font-weight:800;font-size:28px;line-height:1.05;margin:0;letter-spacing:-.01em}
+h1 a{color:inherit;text-decoration:none}
+.side > *{flex-shrink:0}
+.side .sub{margin:0;color:var(--muted)}
+.side .total{margin:6px 0 0;font-size:13.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.side .total b{color:var(--ink);font-weight:600}
+.lede{color:var(--muted);max-width:62ch;margin:10px 0 0}
+.track{height:10px;background:var(--accent-soft);border-radius:5px;overflow:hidden;margin-top:4px}
+.side .track{height:6px}
+.fill{height:100%;background:var(--accent);width:0;transition:width .4s ease}
+.save{font-family:var(--mono);font-size:11px;color:var(--muted)}
+
+/* The act list in the left panel. The green fill of each bar is the percent of
+   the act that is done. A complete act has a green background and a check. */
+.navlbl{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+.actnav ol{list-style:none;margin:0;padding:0;display:grid;gap:2px}
+.actnav a{display:grid;grid-template-columns:14px 40px 1fr auto;align-items:baseline;gap:2px 6px;padding:5px 10px 7px;border:1px solid transparent;border-radius:8px;color:var(--ink);text-decoration:none;font-size:14px}
+.actnav a:hover{background:var(--bg)}
+.actnav a:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.actnav a[aria-current="page"]{border-color:var(--accent);background:var(--accent-soft)}
+.ncheck{visibility:hidden;color:var(--done);font-weight:700}
+.nnum{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.ntitle{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ncount{font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.nbar{grid-column:2 / -1;height:4px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:4px}
+.nfill{display:block;height:100%;width:0;background:var(--done);transition:width .4s ease}
+.actnav a.complete{background:var(--done-soft)}
+.actnav a.complete[aria-current="page"]{border-color:var(--done)}
+.actnav a.complete :is(.ncheck){visibility:visible}
+.actnav a.complete :is(.ntitle,.nnum,.ncount){color:var(--done)}
+.side .cluster{margin-top:auto;padding-top:16px}
+
+/* The course page and the act pages. */
+.home h2{font-family:var(--display);font-weight:700;font-size:30px;margin:0}
+.home .hint{margin:16px 0 0;color:var(--muted)}
+.home[hidden],section.act[hidden]{display:none}
+.crumb{margin:0;font-family:var(--mono);font-size:13px;color:var(--muted)}
+.crumb a{color:var(--accent)}
+.actprog{margin:14px 0 22px}
+.actprog .meta{display:flex;justify-content:space-between;align-items:baseline;font-variant-numeric:tabular-nums}
+.actprog .meta b{font-family:var(--display);font-size:18px;font-weight:700}
+.actprog .pct{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--done)}
+.actprog .fill{background:var(--done)}
+.pager{display:flex;justify-content:space-between;gap:12px;margin:28px 0 0;font-size:15px}
+.pager a{color:var(--accent)}
+button:focus-visible,summary:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.next{margin:14px 0 4px;padding:14px 16px;border:1px solid var(--line);background:var(--surface);border-radius:10px;display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.next .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.next a{color:var(--ink);font-weight:600}
+.rules{font-size:13.5px;color:var(--muted);margin:14px 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:8px}
+.rules div{border-left:2px solid var(--line);padding-left:10px}
+.rules b{color:var(--ink);font-weight:600}
+section.act{padding-block:18px 4px}
+.acthead{display:flex;flex-direction:column;gap:2px;margin-top:6px}
+.acthead .num{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.06em}
+.acthead h2{font-family:var(--display);font-weight:700;font-size:34px;line-height:1.1;margin:0;text-wrap:balance}
+.actdesc{color:var(--muted);margin:6px 0 0;max-width:65ch}
+.loaderr{margin:24px 0;padding:14px 16px;border:1px solid var(--boss);background:var(--boss-soft);color:var(--ink);border-radius:10px}
+ol.quests{list-style:none;margin:0;padding:0;border-top:1px solid var(--line)}
+li.q{border-bottom:1px solid var(--line);display:grid;grid-template-columns:28px 1fr;gap:4px 12px;padding:14px 0}
+li.q[hidden]{display:none}
+html{scroll-padding-top:calc(env(safe-area-inset-top,0px) + 16px)}
+.mark{font-family:var(--mono);font-weight:600;font-size:18px;line-height:1.35;color:var(--muted);text-align:center}
+li.q.done .mark{color:var(--done)}
+.qbody{min-width:0}
+.qtop{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center}
+.qtitle{font-weight:600;font-size:16px}
+li.q.done .qtitle{color:var(--muted)}
+.type{font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:2px 6px;border-radius:4px;border:1px solid var(--line);color:var(--muted)}
+.type.boss{background:var(--boss-soft);color:var(--boss);border-color:transparent;font-weight:600}
+.mins{margin-left:auto;font-family:var(--mono);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.task{margin:6px 0 0;max-width:68ch}
+.links{display:flex;flex-wrap:wrap;gap:4px 14px;margin:6px 0 0;padding:0;list-style:none;font-size:13.5px}
+.links a{color:var(--accent)}
+code,.path{font-family:var(--mono);font-size:12.5px;background:var(--accent-soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+pre{font-family:var(--mono);font-size:12.5px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:10px 12px;overflow-x:auto;margin:8px 0 0}
+details{margin-top:8px}
+summary{cursor:pointer;font-size:13.5px;color:var(--muted);font-weight:500}
+details .ans{margin-top:6px;padding:10px 12px;background:var(--bg);border-radius:6px;font-size:14px;max-width:68ch}
+.qfoot{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:10px}
+.toggle{font:600 13px var(--body);border:1px solid var(--ink);background:transparent;color:var(--ink);padding:5px 12px;border-radius:6px;cursor:pointer}
+li.q.done .toggle{border-color:var(--done);color:var(--done);background:var(--done-soft)}
+.when{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.time{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+footer{padding-block:40px 60px;color:var(--muted);font-size:13px}
+@media (prefers-reduced-motion:reduce){.fill,.nfill{transition:none}}
+
+/* On a narrow screen, the left panel goes above the page, and the act list has two or more columns. */
+@media (max-width:860px){
+  .shell{display:block}
+  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding-top:max(20px,env(safe-area-inset-top,0px))}
+  .actnav ol{grid-template-columns:repeat(auto-fill,minmax(160px,1fr))}
+  .actnav a{grid-template-columns:12px 34px 1fr auto;font-size:13.5px}
+  .side .cluster{margin-top:8px}
+  .page{padding-left:max(16px,env(safe-area-inset-left,0px))}
+}
+
+/* The cluster line in the left panel. The dot shows the level: ok, warn, bad or wait. */
+.cluster{flex:1 1 100%;display:flex;gap:8px;align-items:baseline;font-family:var(--mono);font-size:12px;color:var(--muted);min-width:0}
+.cluster .ctext{overflow-wrap:anywhere}
+.cdot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--muted);transform:translateY(-1px)}
+.cluster[data-level="ok"] .cdot{background:var(--done)}
+.cluster[data-level="warn"] .cdot{background:var(--int)}
+.cluster[data-level="bad"] .cdot{background:var(--boss)}
+.cluster[data-level="bad"] .ctext{color:var(--boss)}
+
+/* The lab panel of a LAB quest. */
+.lab{margin-top:12px;padding:12px 14px;border:1px solid var(--line);border-radius:8px;background:var(--bg)}
+.lab[hidden]{display:none}
+.labhead{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:baseline}
+.labhead .lbl{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.checks{list-style:none;margin:10px 0 0;padding:0;font-size:14px}
+.checks li{display:grid;grid-template-columns:18px 1fr;gap:0 8px;padding:3px 0}
+.cmark{font-family:var(--mono);font-weight:600;text-align:center;color:var(--muted)}
+.checks li[data-state="pass"] .cmark{color:var(--done)}
+.checks li[data-state="fail"] .cmark{color:var(--boss)}
+.checks .actual{grid-column:2;font-family:var(--mono);font-size:12px;color:var(--boss);overflow-wrap:anywhere}
+.checks .actual:empty{display:none}
+.labbtns{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.lab button{font:600 13px var(--body);border:1px solid var(--ink);background:var(--surface);color:var(--ink);padding:5px 12px;border-radius:6px;cursor:pointer}
+.lab button:disabled{opacity:.5;cursor:progress}
+.lab button.danger{border-color:var(--boss);color:var(--boss)}
+.lab button.danger[data-armed]{background:var(--boss);color:var(--surface)}
+.labmsg{margin:8px 0 0;font-size:13.5px;color:var(--muted)}
+.labmsg:empty{display:none}
+.labmsg[data-level="ok"]{color:var(--done)}
+.labmsg[data-level="warn"]{color:var(--int)}
+.labmsg[data-level="bad"]{color:var(--boss)}
+.labnext{margin-top:8px;font-size:13.5px}
+.labnext[hidden]{display:none}
+.cmd{display:flex;gap:8px;align-items:stretch;margin-top:4px}
+.cmd pre{flex:1;min-width:0;margin:0;background:var(--surface)}
+.hints{margin-top:10px;font-size:14px}
+.hints ol{margin:0 0 6px;padding-left:20px}
+.hints ol:empty{display:none}
+.lab .hints button{border-color:var(--line);font-weight:500}
+.lab .hints button[hidden]{display:none}
+.toggle[hidden]{display:none}
+
+/* A done quest: a green row, a Done chip by the title and a Done badge for a lab.
+   It folds to its title row. "Show" opens it again. */
+li.q.done{background:var(--done-soft);box-shadow:inset 4px 0 var(--done);padding-inline:8px;border-radius:6px}
+.donechip{display:none;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;padding:2px 6px;border-radius:4px;background:var(--done);color:var(--bg);font-weight:600}
+li.q.done .donechip{display:inline-block}
+.donebadge{display:none;font:600 13px var(--body);border:1px solid var(--done);color:var(--done);background:var(--done-soft);padding:5px 12px;border-radius:6px}
+li.q.done .toggle[hidden] ~ .donebadge{display:inline-block}
+.fold{display:none;font:500 12.5px var(--body);border:0;background:none;color:var(--accent);cursor:pointer;padding:0 2px}
+li.q.done .fold{display:inline-block}
+li.q.folded :is(.task,pre,.links,details,.lab){display:none}
+
+/* The setup card. cluster.js shows it when the cluster is not ready. */
+.setup{margin:16px 0 4px;padding:14px 16px;border:1px solid var(--int);border-left-width:4px;background:var(--surface);border-radius:10px}
+.setup[hidden]{display:none}
+.setuphead{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}
+.setuphead b{font-family:var(--display);font-size:17px}
+.setup ul{margin:8px 0;padding-left:20px}
+.setup p{margin:8px 0 0;font-size:14px}
+.setup .fine{color:var(--muted);font-size:13px}
+.setup button{font:600 13px var(--body);border:1px solid var(--ink);background:var(--surface);color:var(--ink);padding:5px 12px;border-radius:6px;cursor:pointer}
+.setup button:disabled{opacity:.5;cursor:progress}
+
+section.act.actdone .acthead h2{color:var(--done)}
+/* The lab panel: unmet needs, a check error and the why of a failed check. */
+ul.unmet{margin:6px 0;padding:8px 12px 8px 26px;border-left:3px solid var(--boss);background:var(--boss-soft);font-size:13px}
+.checks .actual.err{color:var(--boss);font-family:var(--mono)}
+.checks .why{display:block;flex-basis:100%;margin-left:22px;font-size:12.5px;color:var(--muted)}
+.checks .why[hidden]{display:none}

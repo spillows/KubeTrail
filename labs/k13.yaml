@@ -1,0 +1,54 @@
+# Lab k13. Setup makes the Deployment. The checks read the type and the ports
+# of the two Services. The node port is fixed, thus only one lab k13 can run
+# in a cluster at a time.
+id: k13
+title: ClusterIP and NodePort
+namespace: lab-k13
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: web
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: web}
+      template:
+        metadata:
+          labels: {app: web}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+              ports:
+                - containerPort: 80
+checks:
+  - id: internal-type
+    say: The Service "web-internal" has the type ClusterIP.
+    get: service/web-internal
+    why: A ClusterIP Service has an address that only Pods and nodes of the cluster can reach.
+    path: "{.spec.type}"
+    equals: ClusterIP
+  - id: internal-port
+    say: The Service "web-internal" has the port 80.
+    get: service/web-internal
+    why: Clients use the port of the Service. The targetPort is the port of the container.
+    path: "{.spec.ports[0].port}"
+    equals: "80"
+  - id: external-type
+    say: The Service "web-external" has the type NodePort.
+    get: service/web-external
+    why: A NodePort Service opens the same port on each node, thus clients outside the cluster can reach it.
+    path: "{.spec.type}"
+    equals: NodePort
+  - id: external-node-port
+    say: The Service "web-external" has the node port 30080.
+    get: service/web-external
+    why: Without a value, Kubernetes selects a node port from 30000 to 32767. A fixed value gives a known address.
+    path: "{.spec.ports[0].nodePort}"
+    equals: "30080"
+hints:
+  - "`kubectl expose deployment web --name=web-internal --port=80` makes a ClusterIP Service."
+  - "`kubectl expose` cannot set the node port. Use `kubectl create service nodeport` with --node-port, or write a YAML file."
+  - The Service selects Pods by labels. The Pods of "web" have the label app=web.
+  - "`minikube service web-external -n lab-k13 --url` gives an address that your computer can open."

@@ -1,0 +1,44 @@
+# Lab k30. Setup makes a Deployment whose command stops when the variable
+# QUEUE is not set. The logs give the cause. sleep ignores SIGTERM as PID 1,
+# thus a short grace period removes old Pods fast after the repair.
+id: k30
+title: A container in CrashLoopBackOff
+namespace: lab-k30
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: worker
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: worker}
+      template:
+        metadata:
+          labels: {app: worker}
+        spec:
+          terminationGracePeriodSeconds: 2
+          containers:
+            - name: worker
+              image: busybox:1.36
+              command:
+                - sh
+                - -c
+                - 'if [ -z "$QUEUE" ]; then echo "error: the variable QUEUE is not set"; exit 1; fi; echo "reading $QUEUE"; exec sleep 86400'
+checks:
+  - id: ready
+    say: The Deployment "worker" has 1 ready replica.
+    get: deployment/worker
+    why: A container that stops is restarted with a longer wait each time. Its status is CrashLoopBackOff.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+  - id: restarts
+    say: Each Pod of "worker" has 0 restarts.
+    get: pods
+    selector: app=worker
+    why: A restart count that increases shows that the container still stops. New Pods start at 0.
+    path: "{.items[*].status.containerStatuses[*].restartCount}"
+    matches: "^0( 0)*$"
+hints:
+  - "`kubectl logs deploy/worker` shows the output of the container. Add --previous to see the output of the container that stopped."
+  - "`kubectl set env` adds a variable to a Deployment."

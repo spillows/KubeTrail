@@ -1,0 +1,29 @@
+# Lab h4. A checksum annotation on the Pod template makes a ConfigMap change roll the Pods.
+id: h4
+title: Roll the Pods when the configuration changes
+namespace: lab-h4
+needs: [helm]
+setup: []
+checks:
+  - id: checksum
+    say: The Pod template of "demo" has a checksum/config annotation.
+    get: deployment/demo
+    why: A ConfigMap change does not change the Pod template. A checksum of the ConfigMap in the template does.
+    path: '{.spec.template.metadata.annotations.checksum/config}'
+    exists: true
+  - id: rolled
+    say: The Deployment "demo" has the revision 2 or more.
+    get: deployment/demo
+    why: The Deployment makes a new revision only when the Pod template changes.
+    path: '{.metadata.annotations.deployment\.kubernetes\.io/revision}'
+    atLeast: 2
+  - id: greeting
+    say: The ConfigMap "demo-config" holds the greeting "bonjour".
+    get: configmap/demo-config
+    why: The upgrade must change the configuration, and only the configuration.
+    path: "{.data.greeting}"
+    equals: bonjour
+hints:
+  - "`cp -r charts/demo workspace/h4` makes the copy. Change only the copy."
+  - "In the Pod template metadata, add `checksum/config: {{ include (print $.Template.BasePath \"/configmap.yaml\") . | sha256sum }}` under `annotations`."
+  - "`helm upgrade demo workspace/h4 -n lab-h4 --set config.greeting=bonjour` changes the value."

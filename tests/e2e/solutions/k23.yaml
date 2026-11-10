@@ -1,0 +1,5 @@
+id: k23
+steps:
+  - run: [kubectl, rollout, status, deployment/web, -n, lab-k23, --timeout=180s]
+  - run: [kubectl, create, poddisruptionbudget, web, --selector=app=web, --min-available=2, -n, lab-k23]
+  - run: [kubectl, wait, "--for=jsonpath={.status.disruptionsAllowed}=1", poddisruptionbudget/web, -n, lab-k23, --timeout=60s]

@@ -1,0 +1,36 @@
+# Lab k5. The checks read the success count of the Job and the schedule of
+# the CronJob. The CronJob does not need to run before the check.
+id: k5
+title: Jobs and CronJobs
+namespace: lab-k5
+setup: []
+checks:
+  - id: job-done
+    say: The Job "pi" has 1 Pod that succeeded.
+    get: job/pi
+    why: A Job runs Pods until the work completes. A Deployment restarts its Pods; a Job does not restart work that is done.
+    path: "{.status.succeeded}"
+    equals: "1"
+  - id: job-image
+    say: The Job "pi" uses the image perl:5.34.
+    get: job/pi
+    why: The Pod template of a Job tells which program does the work.
+    path: "{.spec.template.spec.containers[0].image}"
+    equals: perl:5.34
+  - id: cron-schedule
+    say: The CronJob "tick" has the schedule "*/5 * * * *".
+    get: cronjob/tick
+    why: A CronJob makes a new Job at each time of its schedule. The schedule uses the cron format.
+    path: "{.spec.schedule}"
+    equals: "*/5 * * * *"
+  - id: cron-image
+    say: The CronJob "tick" uses the image busybox:1.36.
+    get: cronjob/tick
+    why: The CronJob holds a Job template. Each Job that it makes uses that template.
+    path: "{.spec.jobTemplate.spec.template.spec.containers[0].image}"
+    equals: busybox:1.36
+hints:
+  - Use `kubectl create job` with --image. Put the command after `--`.
+  - "The pi command: `perl -Mbignum=bpi -wle 'print bpi(200)'`"
+  - Use `kubectl logs job/pi` to read the result.
+  - Use `kubectl create cronjob` with --image and --schedule. Put the schedule in quotes.

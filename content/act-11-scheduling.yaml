@@ -1,0 +1,92 @@
+id: XI
+title: Scheduling
+duration: about 4 hours
+description: Control where Pods run on a cluster with three nodes. These labs need the mq-multi profile. Do them in order, because each lab starts from the node state of the lab before it.
+quests:
+- id: k34
+  type: READ
+  tags: [k8s]
+  minutes: 40
+  title: Read about the scheduler, affinity and taints
+  task: Start the mq-multi profile with `minikube start -p mq-multi --driver=docker --cni=calico --nodes=3`, and select it with `kubectl config use-context mq-multi`. The profile uses much memory. Then read the four concept pages. Write one sentence for each of these questions. How does the scheduler select a node? What is the difference between required and preferred affinity? What does a taint do, and what does a toleration do? What does a drain do that a cordon does not? Then click "Mark done".
+  links:
+  - title: Kubernetes scheduler
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/kube-scheduler/
+  - title: Assigning Pods to nodes
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+  - title: Taints and tolerations
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+  - title: Safely drain a node
+    url: https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/
+- id: k35
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: Node labels and node affinity
+  task: >-
+    Use the mq-multi profile. All three nodes are schedulable and have no
+    taint. Click "Start lab". Give the node mq-multi-m02 the label disk=ssd.
+    Make the Deployment "db" with 2 replicas and the image nginx:1.27. A
+    required node affinity on disk=ssd puts each Pod of "db" on mq-multi-m02.
+    Then click "Check my work".
+  links:
+  - title: Node affinity
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#node-affinity
+- id: k36
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: Anti-affinity and topology spread
+  task: >-
+    Use the mq-multi profile. All three nodes are schedulable and have no
+    taint. Click "Start lab". Make the Deployment "web" with 3 replicas and
+    the image nginx:1.27. A required Pod anti-affinity on the node hostname
+    stops two Pods of "web" on the same node. Find the node of each Pod. Then
+    click "Check my work".
+  links:
+  - title: Inter-pod affinity and anti-affinity
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#inter-pod-affinity-and-anti-affinity
+  - title: Pod topology spread constraints
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/
+- id: k37
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: Taints and tolerations
+  task: >-
+    Use the mq-multi profile. Click "Start lab". Give the node mq-multi-m03 the
+    taint dedicated=gpu with the effect NoSchedule. Then the scheduler puts no
+    usual Pod on it. Make the Job "gpu-job" with the image busybox:1.36 that
+    runs "echo done". Its Pod tolerates the taint and runs on mq-multi-m03.
+    Keep the taint for the next labs. Then click "Check my work".
+  links:
+  - title: Taints and tolerations
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+- id: k38
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: A DaemonSet on each node
+  task: >-
+    Use the mq-multi profile. The node mq-multi-m03 has the taint from k37.
+    Click "Start lab". Make the DaemonSet "node-agent" with the image
+    busybox:1.36 that runs "sleep 86400". It runs one Pod on each of the three
+    nodes, also on the tainted node. Then click "Check my work".
+  links:
+  - title: DaemonSet
+    url: https://kubernetes.io/docs/concepts/workloads/controllers/daemonset/
+- id: k39
+  type: LAB
+  tags: [k8s]
+  minutes: 40
+  title: Cordon and drain, with a disruption budget
+  task: >-
+    Use the mq-multi profile. The node mq-multi-m03 has the taint from k37.
+    Click "Start lab". The lab namespace has the Deployment "web" with 3
+    replicas and the PodDisruptionBudget "web". Drain the node mq-multi-m02
+    for maintenance. "web" keeps 3 ready replicas, and no Pod of "web" runs on
+    mq-multi-m02. Watch how the budget slows the drain. Then click "Check my
+    work". After the lab, uncordon the node.
+  links:
+  - title: Safely drain a node
+    url: https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/

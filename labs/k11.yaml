@@ -1,0 +1,54 @@
+# Lab k11. Setup makes a ResourceQuota and a Deployment whose 3 Pods ask for
+# more CPU than the quota permits. The learner lowers the requests. The quota
+# check makes sure that the learner did not raise the quota. The strategy is
+# Recreate: a rolling update cannot start a new Pod while the old Pod holds
+# the quota, and it does not stop the old Pod before a new Pod is ready.
+id: k11
+title: A ResourceQuota refuses a Deployment
+namespace: lab-k11
+setup:
+  - apiVersion: v1
+    kind: ResourceQuota
+    metadata:
+      name: team-quota
+    spec:
+      hard:
+        requests.cpu: 600m
+        requests.memory: 768Mi
+        pods: "6"
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: api
+    spec:
+      replicas: 3
+      strategy:
+        type: Recreate
+      selector:
+        matchLabels: {app: api}
+      template:
+        metadata:
+          labels: {app: api}
+        spec:
+          containers:
+            - name: api
+              image: nginx:1.27
+              resources:
+                requests: {cpu: 500m, memory: 128Mi}
+checks:
+  - id: ready
+    say: The Deployment "api" has 3 ready replicas.
+    get: deployment/api
+    why: The quota refuses each new Pod whose requests make the total of the namespace more than the hard limit.
+    path: "{.status.readyReplicas}"
+    equals: "3"
+  - id: quota
+    say: The quota "team-quota" still permits 600m of CPU requests.
+    get: resourcequota/team-quota
+    why: A quota protects the cluster for all teams. A team fits its work to the quota; it does not change the quota.
+    path: "{.spec.hard.requests\\.cpu}"
+    equals: 600m
+hints:
+  - Use `kubectl describe resourcequota team-quota` to see the used and the hard values.
+  - The Deployment does not make Pods itself. Find the error in the Events of its ReplicaSet with `kubectl describe replicaset`.
+  - Use `kubectl set resources deployment api` with --requests to lower the CPU request.

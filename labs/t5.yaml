@@ -1,0 +1,41 @@
+# Lab t5. A local module with a Deployment and a Service, called two times.
+id: t5
+title: A local module, called two times
+namespace: lab-t5
+needs: [terraform]
+setup: []
+checks:
+  - id: frontend
+    say: The Deployment "frontend" has 1 ready replica.
+    get: deployment/frontend
+    why: Each module block makes all the resources of the module again, with its own inputs.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+  - id: frontend-service
+    say: The Service "frontend" exists.
+    get: service/frontend
+    why: The module holds the Service too, so each call makes one.
+    path: "{.metadata.name}"
+    equals: frontend
+  - id: backend
+    say: The Deployment "backend" has 1 ready replica.
+    get: deployment/backend
+    why: Each module block makes all the resources of the module again, with its own inputs.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+  - id: backend-service
+    say: The Service "backend" exists.
+    get: service/backend
+    why: The module holds the Service too, so each call makes one.
+    path: "{.metadata.name}"
+    equals: backend
+  - id: state
+    say: The state Secret "tfstate-default-t5" exists in the lab namespace.
+    get: secret/tfstate-default-t5
+    why: The resources of all the modules are in the state of the root configuration.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+hints:
+  - "Put the module in `workspace/t5/modules/app/`. It has the variables `name` and `namespace`."
+  - "`module \"frontend\" { source = \"./modules/app\" ... }` calls the module. Call it a second time for `backend`."
+  - "Run `terraform init` again after you add a module."

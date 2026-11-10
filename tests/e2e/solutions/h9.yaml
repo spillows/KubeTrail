@@ -1,0 +1,25 @@
+id: h9
+dir: charts/demo
+steps:
+- run:
+  - helm
+  - install
+  - demo
+  - .
+  - -n
+  - lab-h9
+  - --wait
+  - --timeout
+  - 180s
+- fails:
+  - helm
+  - upgrade
+  - demo
+  - .
+  - -n
+  - lab-h9
+  - --set
+  - image.tag=no-such-tag
+  - --rollback-on-failure
+  - --timeout
+  - 60s

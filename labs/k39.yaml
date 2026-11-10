@@ -1,0 +1,62 @@
+# Lab k39. Needs the three nodes of mq-multi. mq-multi-m03 has the taint from
+# k37, thus the Pods of "web" can go only on mq-multi and mq-multi-m02. The
+# drain moves them all to mq-multi, and the budget permits one eviction at a
+# time.
+id: k39
+title: Cordon and drain, with a disruption budget
+namespace: lab-k39
+needs: [nodes:3]
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: web
+    spec:
+      replicas: 3
+      selector:
+        matchLabels: {app: web}
+      template:
+        metadata:
+          labels: {app: web}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+  - apiVersion: policy/v1
+    kind: PodDisruptionBudget
+    metadata:
+      name: web
+    spec:
+      minAvailable: 2
+      selector:
+        matchLabels: {app: web}
+checks:
+  - id: unschedulable
+    say: The node mq-multi-m02 is unschedulable.
+    get: node/mq-multi-m02
+    why: A drain first cordons the node, thus the scheduler puts no new Pod on it.
+    path: "{.spec.unschedulable}"
+    equals: "true"
+  - id: budget
+    say: The PodDisruptionBudget "web" still has minAvailable 2.
+    get: poddisruptionbudget/web
+    why: The budget keeps 2 Pods of "web" available during the drain. Do not remove it to make the drain fast.
+    path: "{.spec.minAvailable}"
+    equals: "2"
+  - id: node
+    say: No Pod of "web" runs on mq-multi-m02.
+    get: pods
+    selector: app=web
+    why: A drain evicts the Pods from the node. Their controllers make new Pods on other nodes.
+    path: "{.items[*].spec.nodeName}"
+    matches: "^(mq-multi|mq-multi-m03)( (mq-multi|mq-multi-m03))*$"
+  - id: ready
+    say: The Deployment "web" has 3 ready replicas.
+    get: deployment/web
+    why: An eviction respects the budget. The Deployment makes a new Pod before the drain evicts the next one.
+    path: "{.status.readyReplicas}"
+    equals: "3"
+hints:
+  - "`kubectl get pods -o wide` shows the node of each Pod."
+  - "`kubectl drain mq-multi-m02 --ignore-daemonsets` cordons the node and evicts its Pods."
+  - "`kubectl uncordon mq-multi-m02` makes the node schedulable again after the lab."

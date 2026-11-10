@@ -1,0 +1,5 @@
+id: k24
+steps:
+  - run: [kubectl, rollout, status, deployment/web, -n, lab-k24, --timeout=180s]
+  - run: [kubectl, autoscale, deployment, web, --cpu-percent=50, --min=1, --max=5, -n, lab-k24]
+  - run: [kubectl, wait, "--for=jsonpath={.status.currentMetrics[0].resource.current.averageUtilization}", horizontalpodautoscaler/web, -n, lab-k24, --timeout=280s]

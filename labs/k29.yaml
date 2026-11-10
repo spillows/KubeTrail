@@ -1,0 +1,31 @@
+# Lab k29. Setup makes a Deployment with an image tag that does not exist.
+id: k29
+title: An image that does not pull
+namespace: lab-k29
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: shop
+    spec:
+      replicas: 2
+      selector:
+        matchLabels: {app: shop}
+      template:
+        metadata:
+          labels: {app: shop}
+        spec:
+          containers:
+            - name: shop
+              image: nginx:1.27.99
+checks:
+  - id: ready
+    say: The Deployment "shop" has 2 ready replicas.
+    get: deployment/shop
+    why: The kubelet cannot start a container when the registry has no image with that name and tag.
+    path: "{.status.readyReplicas}"
+    equals: "2"
+hints:
+  - "`kubectl get pods` shows the status of the Pods. `kubectl describe pod` shows the Events."
+  - ErrImagePull and ImagePullBackOff tell that the image did not pull. The Events give the image name.
+  - "`kubectl set image` changes the image of a container."

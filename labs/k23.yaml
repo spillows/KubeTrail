@@ -1,0 +1,33 @@
+# Lab k23. Setup makes a Deployment with 3 replicas. The disruption
+# controller sets status.disruptionsAllowed from the budget and the healthy
+# Pods. minAvailable 2 or maxUnavailable 1 both give 1.
+id: k23
+title: A PodDisruptionBudget
+namespace: lab-k23
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: web
+    spec:
+      replicas: 3
+      selector:
+        matchLabels: {app: web}
+      template:
+        metadata:
+          labels: {app: web}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+checks:
+  - id: allowed
+    say: The PodDisruptionBudget "web" permits 1 disruption.
+    get: poddisruptionbudget/web
+    why: A drain asks before it evicts a Pod. The budget refuses an eviction that makes fewer healthy Pods than it permits.
+    path: "{.status.disruptionsAllowed}"
+    equals: "1"
+hints:
+  - "`kubectl create poddisruptionbudget` with --selector and --min-available or --max-unavailable."
+  - The selector of the budget must select the Pods of "web". They have the label app=web.
+  - With 3 healthy Pods, minAvailable 2 or maxUnavailable 1 permits 1 disruption.

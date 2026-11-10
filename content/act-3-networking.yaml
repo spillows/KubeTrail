@@ -1,0 +1,92 @@
+id: III
+title: Networking
+duration: about 3 hours
+description: Give Pods a stable address. Reach a Service from inside and from outside the cluster, find it by its DNS name, and control which Pods can send traffic to it.
+quests:
+- id: k12
+  type: READ
+  tags: [k8s]
+  minutes: 40
+  title: Read about Services, DNS, the Gateway API and NetworkPolicy
+  task: Read the four concept pages. Write one sentence for each of these questions. What is the difference between a ClusterIP Service and a NodePort Service? What DNS name does a Service get? What does an HTTPRoute do that a Service does not? What traffic does a Pod get when no NetworkPolicy selects it? Then click "Mark done".
+  links:
+  - title: Service
+    url: https://kubernetes.io/docs/concepts/services-networking/service/
+  - title: DNS for Services and Pods
+    url: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+  - title: Gateway API
+    url: https://kubernetes.io/docs/concepts/services-networking/gateway/
+  - title: Network Policies
+    url: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+- id: k13
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: ClusterIP and NodePort
+  task: >-
+    Click "Start lab". The lab namespace has the Deployment "web". Make two
+    Services for it. The Service "web-internal" has the type ClusterIP and the
+    port 80, thus only the cluster can reach it. The Service "web-external"
+    has the type NodePort and the node port 30080, thus your computer can reach
+    it on the address of the minikube node. Open "web-external" in a browser.
+    Then click "Check my work".
+  links:
+  - title: Service types
+    url: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
+  - title: Access applications in minikube
+    url: https://minikube.sigs.k8s.io/docs/handbook/accessing/
+- id: k14
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: Reach a Service by its DNS name
+  task: >-
+    Click "Start lab". The lab namespace has the Deployment "api" and the
+    Deployment "witness". The witness gets http://api each 2 seconds, and it is
+    Ready only when it gets a reply. The witness is not Ready now. Make the
+    witness Ready. Do not change the witness. Then click "Check my work".
+  links:
+  - title: DNS for Services and Pods
+    url: https://kubernetes.io/docs/concepts/services-networking/dns-pod-service/
+  - title: Debug Services
+    url: https://kubernetes.io/docs/tasks/debug/debug-application/debug-service/
+- id: k15
+  type: LAB
+  tags: [k8s]
+  minutes: 40
+  title: Route two paths through a Gateway
+  task: >-
+    This lab needs Envoy Gateway. If it is not installed, the lab panel gives
+    the commands. Click "Start lab". The lab namespace has the Deployments and
+    Services "shop" and "blog", and the Deployment "witness". Make the Gateway
+    "site" with the GatewayClass "quest" and an HTTP listener on port 80. Make
+    the HTTPRoute "site" for that Gateway. It sends the path /shop to the
+    Service "shop" and the path /blog to the Service "blog". The witness gets
+    both paths through the Gateway each 2 seconds. It is Ready only when each
+    path gets the correct reply. Do not change the witness. Then click "Check
+    my work".
+  links:
+  - title: Gateway API
+    url: https://kubernetes.io/docs/concepts/services-networking/gateway/
+  - title: HTTP routing
+    url: https://gateway-api.sigs.k8s.io/guides/http-routing/
+  - title: Envoy Gateway quickstart
+    url: https://gateway.envoyproxy.io/docs/tasks/quickstart/
+- id: k16
+  type: LAB
+  tags: [k8s]
+  minutes: 40
+  title: Deny all, then permit one client
+  task: >-
+    Click "Start lab". The lab namespace has the Deployment and Service "web",
+    and two witnesses. The witness "allowed" has the label role=client. The
+    witness "blocked" does not. Each witness gets http://web, and it is Ready
+    only when it gets a reply. Now both are Ready. Add NetworkPolicies so that
+    the Pods of "web" refuse all traffic, but permit traffic from Pods with
+    role=client. Then "allowed" stays Ready and "blocked" is not Ready. Then
+    click "Check my work".
+  links:
+  - title: Network Policies
+    url: https://kubernetes.io/docs/concepts/services-networking/network-policies/
+  - title: Declare a network policy
+    url: https://kubernetes.io/docs/tasks/administer-cluster/declare-network-policy/

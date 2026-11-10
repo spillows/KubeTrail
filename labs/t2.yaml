@@ -1,0 +1,29 @@
+# Lab t2. The kubernetes backend keeps the state in a Secret of the lab namespace.
+id: t2
+title: The cluster backend and the first resources
+namespace: lab-t2
+needs: [terraform]
+setup: []
+checks:
+  - id: state
+    say: The state Secret "tfstate-default-t2" exists in the lab namespace.
+    get: secret/tfstate-default-t2
+    why: The kubernetes backend keeps the state in a Secret named tfstate-<workspace>-<secret_suffix>.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+  - id: web
+    say: The Deployment "web" has 2 ready replicas.
+    get: deployment/web
+    why: The kubernetes provider waits for the rollout. The apply completes only when the Pods are ready.
+    path: "{.status.readyReplicas}"
+    equals: "2"
+  - id: config
+    say: The ConfigMap "app-config" holds the greeting "hello".
+    get: configmap/app-config
+    why: Terraform makes each resource of the configuration with the values that you wrote.
+    path: "{.data.greeting}"
+    equals: hello
+hints:
+  - "Put the backend block in `workspace/t2/backend.tf`. `versions.tf` and `providers.tf` are already there."
+  - "`kubernetes_deployment_v1` and `kubernetes_config_map_v1` are the resource types. Set `namespace = \"lab-t2\"` in each `metadata`."
+  - "`terraform init`, then `terraform apply`, in `workspace/t2`."

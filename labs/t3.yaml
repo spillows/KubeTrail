@@ -1,0 +1,35 @@
+# Lab t3. One map variable, a for_each resource and an output.
+id: t3
+title: Variables, for_each and outputs
+namespace: lab-t3
+needs: [terraform]
+setup: []
+checks:
+  - id: team-a
+    say: The ConfigMap "team-a" holds the color "red".
+    get: configmap/team-a
+    why: for_each makes one resource for each key of the map, and each.value gives its value.
+    path: "{.data.color}"
+    equals: red
+  - id: team-b
+    say: The ConfigMap "team-b" holds the color "green".
+    get: configmap/team-b
+    why: for_each makes one resource for each key of the map, and each.value gives its value.
+    path: "{.data.color}"
+    equals: green
+  - id: team-c
+    say: The ConfigMap "team-c" holds the color "blue".
+    get: configmap/team-c
+    why: for_each makes one resource for each key of the map, and each.value gives its value.
+    path: "{.data.color}"
+    equals: blue
+  - id: state
+    say: The state Secret "tfstate-default-t3" exists in the lab namespace.
+    get: secret/tfstate-default-t3
+    why: Terraform keeps the outputs only in the state. Thus terraform output reads the state Secret.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+hints:
+  - "`variable \"teams\" { type = map(string) }` with a `default` holds the three names and colors."
+  - "`for_each = var.teams` on a `kubernetes_config_map_v1`. Use `each.key` for the name and `each.value` for the color."
+  - "`terraform output` shows the outputs after the apply."

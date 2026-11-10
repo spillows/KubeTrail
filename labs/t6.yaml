@@ -1,0 +1,35 @@
+# Lab t6. Two Terraform workspaces give two state Secrets in one namespace.
+id: t6
+title: "Workspaces: staging and prod in one namespace"
+namespace: lab-t6
+needs: [terraform]
+setup: []
+checks:
+  - id: web-staging
+    say: The Deployment "web-staging" exists.
+    get: deployment/web-staging
+    why: terraform.workspace gives the name of the current workspace. Use it in the names of the objects.
+    path: "{.metadata.name}"
+    exists: true
+  - id: state-staging
+    say: The state Secret "tfstate-staging-t6" exists in the lab namespace.
+    get: secret/tfstate-staging-t6
+    why: Each workspace has its own state. The backend puts the workspace name in the Secret name.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+  - id: web-prod
+    say: The Deployment "web-prod" exists.
+    get: deployment/web-prod
+    why: terraform.workspace gives the name of the current workspace. Use it in the names of the objects.
+    path: "{.metadata.name}"
+    exists: true
+  - id: state-prod
+    say: The state Secret "tfstate-prod-t6" exists in the lab namespace.
+    get: secret/tfstate-prod-t6
+    why: Each workspace has its own state. The backend puts the workspace name in the Secret name.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+hints:
+  - "`terraform workspace new staging` makes a workspace and selects it."
+  - "`name = \"web-${terraform.workspace}\"` gives a different name in each workspace."
+  - "`terraform workspace select prod` changes the workspace. Then `terraform apply` again."

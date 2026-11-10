@@ -1,0 +1,24 @@
+# Lab k10. Kubernetes sets status.qosClass from the requests and limits of
+# all containers. The checks read only that field.
+id: k10
+title: Requests, limits and the QoS class
+namespace: lab-k10
+setup: []
+checks:
+  - id: fixed
+    say: The Pod "fixed" has the QoS class Guaranteed.
+    get: pod/fixed
+    why: When each container has requests equal to its limits for CPU and memory, the kubelet stops the Pod last under memory pressure.
+    path: "{.status.qosClass}"
+    equals: Guaranteed
+  - id: flex
+    say: The Pod "flex" has the QoS class Burstable.
+    get: pod/flex
+    why: A Pod with a request lower than its limit, or with no limit, can use spare capacity, but the kubelet stops it before a Guaranteed Pod.
+    path: "{.status.qosClass}"
+    equals: Burstable
+hints:
+  - "`kubectl run` cannot set requests and limits. Write each Pod in a YAML file."
+  - Put `resources.requests` and `resources.limits` on the container. Give both cpu and memory.
+  - For Guaranteed, the requests equal the limits. For Burstable, give a request and no limit, or a lower request than the limit.
+  - Use `kubectl get pod fixed -o jsonpath='{.status.qosClass}'` to find the class.

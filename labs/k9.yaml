@@ -1,0 +1,43 @@
+# Lab k9. Setup makes the Secret. The checks read the volumes of the Pod, and
+# make sure that no variable of the Pod reads a Secret.
+id: k9
+title: A Secret as a mounted file
+namespace: lab-k9
+setup:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: db-creds
+    type: Opaque
+    stringData:
+      username: quest
+      password: s3cr3t-for-the-lab
+checks:
+  - id: running
+    say: The Pod "api" is Running.
+    get: pod/api
+    why: A Pod that mounts a Secret that does not exist stays in ContainerCreating.
+    path: "{.status.phase}"
+    equals: Running
+  - id: volume
+    say: The Pod "api" has a volume from the Secret "db-creds".
+    get: pod/api
+    why: A Secret volume gives each key as a file. Only the containers that mount the volume can read it.
+    path: "{.spec.volumes[*].secret.secretName}"
+    equals: db-creds
+  - id: no-env
+    say: No environment variable of "api" reads a Secret.
+    get: pod/api
+    why: Variables show in crash reports, in logs and to each process in the container. Files are less easy to leak.
+    path: "{.spec.containers[*].env[*].valueFrom.secretKeyRef.name}"
+    exists: false
+  - id: no-env-from
+    say: No container of "api" gets a Secret with envFrom.
+    get: pod/api
+    why: envFrom with a secretRef puts each key of the Secret in a variable.
+    path: "{.spec.containers[*].envFrom[*].secretRef.name}"
+    exists: false
+hints:
+  - "`kubectl get secret db-creds -o yaml` shows the values in base64. `base64 -d` decodes them."
+  - "`kubectl run` cannot add a volume. Write the Pod in a YAML file and use `kubectl apply -f`."
+  - Add a volume with `secret.secretName` to the Pod, and a `volumeMounts` entry to the container.

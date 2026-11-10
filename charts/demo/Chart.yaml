@@ -1,0 +1,6 @@
+apiVersion: v2
+name: demo
+description: A small web app for the Helm labs of KubeTrail.
+type: application
+version: 0.1.0
+appVersion: "1.27"

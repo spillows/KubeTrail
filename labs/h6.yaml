@@ -1,0 +1,23 @@
+# Lab h6. A copy of charts/demo with charts/cache as a subchart.
+id: h6
+title: A chart with a subchart
+namespace: lab-h6
+needs: [helm]
+setup: []
+checks:
+  - id: ready
+    say: The Deployment "demo-cache" has 1 ready replica.
+    get: deployment/demo-cache
+    why: Helm installs the templates of each subchart with the release of the parent chart.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+  - id: instance
+    say: The Deployment "demo-cache" has the label app.kubernetes.io/instance=demo.
+    get: deployment/demo-cache
+    why: A subchart uses the release name of the parent, so its objects belong to the release "demo".
+    path: '{.metadata.labels.app\.kubernetes\.io/instance}'
+    equals: demo
+hints:
+  - "`cp -r charts/demo workspace/h6`, then copy `charts/cache` into `workspace/h6/charts/`."
+  - "A chart in the `charts/` directory of a chart is a subchart. Helm installs it with the parent."
+  - "`helm install demo workspace/h6 -n lab-h6` installs both charts."

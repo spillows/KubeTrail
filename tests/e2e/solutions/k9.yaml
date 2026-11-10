@@ -1,0 +1,16 @@
+id: k9
+steps:
+  - apply:
+      - apiVersion: v1
+        kind: Pod
+        metadata: {name: api}
+        spec:
+          volumes:
+            - name: creds
+              secret: {secretName: db-creds}
+          containers:
+            - name: api
+              image: nginx:1.27
+              volumeMounts:
+                - {name: creds, mountPath: /etc/creds, readOnly: true}
+  - run: [kubectl, wait, --for=condition=Ready, pod/api, -n, lab-k9, --timeout=180s]

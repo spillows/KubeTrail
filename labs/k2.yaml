@@ -1,0 +1,29 @@
+id: k2
+title: Run your first Pod
+namespace: lab-k2
+setup: []
+checks:
+  - id: running
+    say: The Pod "hello" is Running.
+    get: pod/hello
+    why: A Pod that is not Running does not serve. The Events of the Pod tell what stops it.
+    path: "{.status.phase}"
+    equals: Running
+  - id: image
+    say: The Pod uses the image nginx:1.27.
+    get: pod/hello
+    why: The image tag fixes the version of the software. A different tag can be different software.
+    path: "{.spec.containers[0].image}"
+    equals: nginx:1.27
+  - id: label
+    say: The Pod has the label app=hello.
+    get: pod/hello
+    why: Services and Deployments find their Pods by label. A Pod without the label is not found.
+    path: "{.metadata.labels.app}"
+    equals: hello
+hints:
+  - Run the command that the panel shows first. Then `kubectl` uses the lab namespace.
+  - Use `kubectl run` to make one Pod. Give the name, then the --image and --labels flags.
+  - "The full command: `kubectl run hello --image=nginx:1.27 --labels=app=hello`"
+  - To examine the Pod, use `kubectl get pods --show-labels`, `kubectl describe pod hello` (the Events are at the end) and `kubectl logs hello`.
+  - Use `kubectl delete pod hello`, then `kubectl get pods`. A bare Pod does not come back. A Deployment makes this better in the next lab.

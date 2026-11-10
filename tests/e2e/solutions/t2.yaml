@@ -1,0 +1,20 @@
+id: t2
+dir: workspace/t2
+steps:
+- file:
+    name: backend.tf
+    text: "terraform {\n  backend \"kubernetes\" {\n    secret_suffix  = \"t2\"\n    namespace      = \"lab-t2\"\n    config_path    = \"~/.kube/config\"\n    config_context = \"{{context}}\"\n  }\n}\n"
+- file:
+    name: main.tf
+    text: "resource \"kubernetes_config_map_v1\" \"app_config\" {\n  metadata {\n    name      = \"app-config\"\n    namespace = \"lab-t2\"\n  }\n  data = { greeting = \"hello\" }\n}\n\nresource \"kubernetes_deployment_v1\"\
+      \ \"web\" {\n  metadata {\n    name      = \"web\"\n    namespace = \"lab-t2\"\n  }\n  spec {\n    replicas = 2\n    selector {\n      match_labels = { app = \"web\" }\n    }\n    template {\n   \
+      \   metadata {\n        labels = { app = \"web\" }\n      }\n      spec {\n        container {\n          name  = \"app\"\n          image = \"nginx:1.27\"\n        }\n      }\n    }\n  }\n}\n"
+- run:
+  - terraform
+  - init
+  - -input=false
+- run:
+  - terraform
+  - apply
+  - -auto-approve
+  - -input=false

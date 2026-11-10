@@ -1,0 +1,16 @@
+id: h6
+dir: charts/demo
+steps:
+- copy:
+    from: charts/cache
+    to: charts/cache
+- run:
+  - helm
+  - install
+  - demo
+  - .
+  - -n
+  - lab-h6
+  - --wait
+  - --timeout
+  - 180s

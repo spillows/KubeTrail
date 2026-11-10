@@ -1,0 +1,7 @@
+id: k33
+steps:
+  - run: [kubectl, patch, configmap, store-config, --type=merge, "-p={\"data\":{\"MODE\":\"production\"}}", -n, lab-k33]
+  - run: [kubectl, set, image, deployment/store, store=nginx:1.27, -n, lab-k33]
+  - run: [kubectl, patch, service, store, --type=json, "-p=[{\"op\":\"replace\",\"path\":\"/spec/ports/0/targetPort\",\"value\":80}]", -n, lab-k33]
+  - run: [kubectl, rollout, status, deployment/store, -n, lab-k33, --timeout=180s]
+  - run: [kubectl, wait, "--for=jsonpath={.status.readyReplicas}=1", deployment/witness, -n, lab-k33, --timeout=120s]

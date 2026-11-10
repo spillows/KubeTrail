@@ -1,0 +1,70 @@
+# Lab k14. Setup makes the Deployment "api" and a witness whose readiness
+# probe gets http://api. The learner makes the Service "api". The witness
+# check reads readyReplicas, and the spec check makes sure that the learner
+# did not change the probe of the witness.
+id: k14
+title: Reach a Service by its DNS name
+namespace: lab-k14
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: api
+    spec:
+      replicas: 2
+      selector:
+        matchLabels: {app: api}
+      template:
+        metadata:
+          labels: {app: api}
+        spec:
+          containers:
+            - name: api
+              image: nginx:1.27
+              ports:
+                - containerPort: 80
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: witness
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: witness}
+      template:
+        metadata:
+          labels: {app: witness}
+        spec:
+          containers:
+            - name: witness
+              image: busybox:1.36
+              command: [sleep, "86400"]
+              readinessProbe:
+                exec:
+                  command: [wget, -q, -T, "1", -O, /dev/null, http://api]
+                periodSeconds: 2
+                timeoutSeconds: 2
+                failureThreshold: 1
+checks:
+  - id: service
+    say: The Service "api" exists.
+    get: service/api
+    why: Pods change their addresses. A Service gives a stable address and the DNS name api in its namespace.
+    path: "{.metadata.name}"
+    equals: api
+  - id: probe
+    say: The witness still gets http://api.
+    get: deployment/witness
+    why: The witness tests the name api. A change of the witness does not prove that the name works.
+    path: "{.spec.template.spec.containers[0].readinessProbe.exec.command[6]}"
+    equals: http://api
+  - id: witness
+    say: The witness is Ready.
+    get: deployment/witness
+    why: The witness is Ready only when the DNS name api goes to a Pod that replies.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+hints:
+  - "`kubectl describe pod -l app=witness` shows why the readiness probe fails."
+  - "The name api is the name of a Service. Use `kubectl get services` to find the Services."
+  - "`kubectl expose deployment api --port=80` makes a Service with the name of the Deployment."

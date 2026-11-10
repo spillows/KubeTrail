@@ -1,0 +1,53 @@
+# Lab k28. Setup makes a Deployment that breaks the restricted level. The
+# label does not stop Pods that run already, thus the checks also read the
+# security fields of the template. Updated and ready replicas show that the
+# namespace accepted the new Pods.
+id: k28
+title: The restricted Pod Security level on the lab namespace
+namespace: lab-k28
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: legacy
+    spec:
+      replicas: 2
+      selector:
+        matchLabels: {app: legacy}
+      template:
+        metadata:
+          labels: {app: legacy}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+checks:
+  - id: label
+    say: The lab namespace enforces the level restricted.
+    get: namespace/lab-k28
+    why: The Pod Security admission controller reads this label, and refuses new Pods that break the level.
+    path: "{.metadata.labels.pod-security\\.kubernetes\\.io/enforce}"
+    equals: restricted
+  - id: seccomp
+    say: The Pods of "legacy" use the seccomp profile RuntimeDefault.
+    get: deployment/legacy
+    why: The restricted level needs a seccomp profile. It stops system calls that containers seldom need.
+    path: "{.spec.template.spec..seccompProfile.type}"
+    matches: "^RuntimeDefault( RuntimeDefault)*$"
+  - id: capabilities
+    say: Each container of "legacy" drops ALL capabilities.
+    get: deployment/legacy
+    why: The restricted level needs containers to drop all Linux capabilities. It permits only NET_BIND_SERVICE to be added again.
+    path: "{.spec.template.spec.containers[*].securityContext.capabilities.drop[*]}"
+    matches: "^ALL( ALL)*$"
+  - id: updated
+    say: All replicas of "legacy" are updated and ready.
+    get: deployment/legacy
+    why: When the namespace refuses the new Pods, the old Pods run, but the rollout does not complete.
+    path: "{.status.updatedReplicas} {.status.readyReplicas}"
+    equals: 2 2
+hints:
+  - "`kubectl label namespace lab-k28 pod-security.kubernetes.io/enforce=restricted` sets the level. Its warnings name the fields to change."
+  - "`kubectl describe replicaset -l app=legacy` shows why the namespace refuses a new Pod."
+  - The restricted level needs runAsNonRoot, allowPrivilegeEscalation false, capabilities drop ALL and seccompProfile RuntimeDefault.
+  - The image nginx runs as root. nginxinc/nginx-unprivileged:1.27 runs as user 101.

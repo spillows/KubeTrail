@@ -1,0 +1,34 @@
+# Lab k31. Setup makes a Deployment that requests more CPU than a minikube
+# node has. The scheduler gives the cause in the Events of the Pod.
+id: k31
+title: A Pod that stays Pending
+namespace: lab-k31
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: big
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: big}
+      template:
+        metadata:
+          labels: {app: big}
+        spec:
+          containers:
+            - name: big
+              image: nginx:1.27
+              resources:
+                requests: {cpu: "64", memory: 64Mi}
+checks:
+  - id: ready
+    say: The Deployment "big" has 1 ready replica.
+    get: deployment/big
+    why: The scheduler puts a Pod only on a node whose free capacity is equal to or more than the requests of the Pod.
+    path: "{.status.readyReplicas}"
+    equals: "1"
+hints:
+  - "`kubectl describe pod -l app=big` shows the message of the scheduler in the Events."
+  - "`kubectl describe node` shows the Allocatable CPU and memory of the node."
+  - "`kubectl set resources deployment big` with --requests changes the requests."

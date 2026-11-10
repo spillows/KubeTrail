@@ -1,0 +1,30 @@
+# The act files, in page order. docs/designs/course-expansion.md gives the
+# catalog of the acts. Each new act adds its file here.
+#
+# Each act file has these keys:
+#   id, title, duration, description, quests
+# Each quest has these keys:
+#   id       Unique across all acts. A lab in labs/ uses the same id.
+#   type     READ, LAB, RECON or BOSS.
+#   tags     One or more of: k8s, helm, tf, int.
+#   minutes  A positive integer.
+#   title    Text.
+#   task     Text.
+#   code     Optional, READ quests only. Text that the page shows as a code block.
+#            A LAB or BOSS quest states an end state and gives no command to copy.
+#   links    Optional. A list of {title, url}.
+#   answer   Optional. Text that the page hides until the user opens it.
+# backend/content.py validates the files and refuses unknown keys.
+acts:
+  - act-1-k8s.yaml
+  - act-2-configuration.yaml
+  - act-3-networking.yaml
+  - act-4-storage.yaml
+  - act-5-health.yaml
+  - act-6-security.yaml
+  - act-7-debugging.yaml
+  - act-8-helm.yaml
+  - act-9-terraform.yaml
+  - act-10-capstone.yaml
+  - act-11-scheduling.yaml
+  - act-12-extending.yaml

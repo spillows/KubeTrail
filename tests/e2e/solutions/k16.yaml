@@ -1,0 +1,23 @@
+id: k16
+steps:
+  - run: [kubectl, wait, "--for=jsonpath={.status.readyReplicas}=1", deployment/blocked, -n, lab-k16, --timeout=180s]
+  - apply:
+      - apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        metadata: {name: deny-all}
+        spec:
+          podSelector: {}
+          policyTypes: [Ingress]
+      - apiVersion: networking.k8s.io/v1
+        kind: NetworkPolicy
+        metadata: {name: web-from-clients}
+        spec:
+          podSelector:
+            matchLabels: {app: web}
+          policyTypes: [Ingress]
+          ingress:
+            - from:
+                - podSelector:
+                    matchLabels: {role: client}
+  - run: [kubectl, wait, --for=condition=Available=false, deployment/blocked, -n, lab-k16, --timeout=60s]
+  - run: [kubectl, wait, "--for=jsonpath={.status.readyReplicas}=1", deployment/allowed, -n, lab-k16, --timeout=60s]

@@ -1,0 +1,5 @@
+id: k32
+steps:
+  - run: [kubectl, patch, service, web, --type=merge, "-p={\"spec\":{\"selector\":{\"app\":\"web\"}}}", -n, lab-k32]
+  - run: [kubectl, rollout, status, deployment/web, -n, lab-k32, --timeout=180s]
+  - run: [kubectl, wait, "--for=jsonpath={.endpoints[0].conditions.ready}=true", endpointslice, -l, kubernetes.io/service-name=web, -n, lab-k32, --timeout=60s]

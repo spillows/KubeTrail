@@ -1,0 +1,37 @@
+id: t9
+dir: workspace/t9
+steps:
+- file:
+    name: backend.tf
+    text: "terraform {\n  backend \"kubernetes\" {\n    secret_suffix  = \"t9\"\n    namespace      = \"lab-t9\"\n    config_path    = \"~/.kube/config\"\n    config_context = \"{{context}}\"\n  }\n}\n"
+- file:
+    name: modules/app/main.tf
+    text: "variable \"name\" {\n  type = string\n}\n\nvariable \"namespace\" {\n  type = string\n}\n\nvariable \"image\" {\n  type    = string\n  default = \"nginx:1.27\"\n}\n\nresource \"kubernetes_deployment_v1\"\
+      \ \"this\" {\n  metadata {\n    name      = var.name\n    namespace = var.namespace\n  }\n  spec {\n    replicas = 1\n    selector {\n      match_labels = { app = var.name }\n    }\n    template {\n\
+      \      metadata {\n        labels = { app = var.name }\n      }\n      spec {\n        container {\n          name  = \"app\"\n          image = var.image\n        }\n      }\n    }\n  }\n}\n\nresource\
+      \ \"kubernetes_service_v1\" \"this\" {\n  metadata {\n    name      = var.name\n    namespace = var.namespace\n  }\n  spec {\n    selector = { app = var.name }\n    port {\n      port        = 80\n\
+      \      target_port = 80\n    }\n  }\n}\n"
+- file:
+    name: main.tf
+    text: "module \"api\" {\n  source    = \"./modules/app\"\n  name      = \"api-${terraform.workspace}\"\n  namespace = \"lab-t9\"\n}\n\nmodule \"worker\" {\n  source    = \"./modules/app\"\n  name  \
+      \    = \"worker-${terraform.workspace}\"\n  namespace = \"lab-t9\"\n}\n"
+- run:
+  - terraform
+  - init
+  - -input=false
+- run:
+  - terraform
+  - workspace
+  - new
+  - staging
+- run: &id001
+  - terraform
+  - apply
+  - -auto-approve
+  - -input=false
+- run:
+  - terraform
+  - workspace
+  - new
+  - prod
+- run: *id001

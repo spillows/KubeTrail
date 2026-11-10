@@ -1,0 +1,36 @@
+# Lab k6. A native sidecar is an init container with restartPolicy Always
+# (GA in Kubernetes 1.33). The checks read the Pod spec and the phase.
+id: k6
+title: Init containers and a sidecar that share a volume
+namespace: lab-k6
+setup: []
+checks:
+  - id: running
+    say: The Pod "app" is Running.
+    get: pod/app
+    why: The main containers start only after each init container completes, or for a sidecar, after it starts.
+    path: "{.status.phase}"
+    equals: Running
+  - id: sidecar
+    say: The Pod "app" has an init container with restartPolicy Always.
+    get: pod/app
+    why: An init container with restartPolicy Always is a sidecar. It starts before the main container and runs with it.
+    path: '{.spec.initContainers[?(@.restartPolicy=="Always")].name}'
+    exists: true
+  - id: emptydir
+    say: The Pod "app" has an emptyDir volume.
+    get: pod/app
+    why: An emptyDir volume lives as long as the Pod. All containers of the Pod can mount it and share its files.
+    path: "{.spec.volumes[?(@.emptyDir)].name}"
+    exists: true
+  - id: nginx
+    say: The main container of "app" uses the image nginx:1.27.
+    get: pod/app
+    why: The init containers prepare the work. The main container does the work.
+    path: "{.spec.containers[0].image}"
+    equals: nginx:1.27
+hints:
+  - "`kubectl run` cannot make init containers. Write the Pod in a YAML file and use `kubectl apply -f`."
+  - Put the volume under spec.volumes. Mount it in each container with volumeMounts.
+  - "An init container with `restartPolicy: Always` goes under spec.initContainers, not spec.containers."
+  - Use `kubectl describe pod app` to see the start order in the Events.

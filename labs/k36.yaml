@@ -1,0 +1,24 @@
+# Lab k36. Needs the three nodes of mq-multi. Required anti-affinity with
+# 3 replicas needs 3 schedulable nodes without a taint.
+id: k36
+title: Anti-affinity and topology spread
+namespace: lab-k36
+needs: [nodes:3]
+setup: []
+checks:
+  - id: anti-affinity
+    say: The Pods of "web" have a required anti-affinity on kubernetes.io/hostname.
+    get: deployment/web
+    why: The topology key is the node label that the rule compares. kubernetes.io/hostname is different on each node.
+    path: "{.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution[*].topologyKey}"
+    equals: kubernetes.io/hostname
+  - id: ready
+    say: The Deployment "web" has 3 ready replicas.
+    get: deployment/web
+    why: With required anti-affinity, a replica that has no free node stays Pending. Three nodes give space for three replicas.
+    path: "{.status.readyReplicas}"
+    equals: "3"
+hints:
+  - The labelSelector of the anti-affinity term selects the Pods of "web" itself, for example app=web.
+  - Use requiredDuringSchedulingIgnoredDuringExecution, not preferredDuringSchedulingIgnoredDuringExecution.
+  - "`kubectl get pods -o wide` shows the node of each Pod. Each node has one Pod."

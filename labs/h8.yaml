@@ -1,0 +1,23 @@
+# Lab h8. A test Pod with the hook annotation "test". helm test runs it.
+id: h8
+title: helm test
+namespace: lab-h8
+needs: [helm]
+setup: []
+checks:
+  - id: hook
+    say: The Pod "test-connection" is a test hook.
+    get: pod/test-connection
+    why: Helm runs only the Pods with the hook annotation "test" when you use helm test.
+    path: '{.metadata.annotations.helm\.sh/hook}'
+    equals: test
+  - id: passed
+    say: The Pod "test-connection" has the phase Succeeded.
+    get: pod/test-connection
+    why: A test passes when its container stops with exit code 0.
+    path: "{.status.phase}"
+    equals: Succeeded
+hints:
+  - "`cp -r charts/demo workspace/h8` makes the copy. Put the test Pod in `workspace/h8/templates/tests/`."
+  - "`busybox:1.36` with `command: [wget, -qO-, \"http://{{ .Release.Name }}:80\"]` and `restartPolicy: Never` tests the Service."
+  - "`helm test demo -n lab-h8` runs the test after the install."

@@ -1,0 +1,36 @@
+# Lab k19. The checks read the StatefulSet, the Service and the claim of the
+# third replica. The volumeClaimTemplate "data" and the Pod "db-2" give the
+# claim the name data-db-2.
+id: k19
+title: A StatefulSet with a headless Service
+namespace: lab-k19
+setup: []
+checks:
+  - id: service
+    say: The Service "db" has no cluster IP.
+    get: service/db
+    why: A headless Service gives each Pod a DNS name, such as db-0.db, in place of one address for all Pods.
+    path: "{.spec.clusterIP}"
+    equals: None
+  - id: service-name
+    say: The StatefulSet "db" uses the Service "db".
+    get: statefulset/db
+    why: serviceName tells the StatefulSet which headless Service gives the DNS names of its Pods.
+    path: "{.spec.serviceName}"
+    equals: db
+  - id: ready
+    say: The StatefulSet "db" has 3 ready replicas.
+    get: statefulset/db
+    why: A StatefulSet starts its Pods one at a time, in order. db-1 starts only when db-0 is Ready.
+    path: "{.status.readyReplicas}"
+    equals: "3"
+  - id: claim
+    say: The claim "data-db-2" is Bound.
+    get: persistentvolumeclaim/data-db-2
+    why: Each replica gets its own claim from volumeClaimTemplates. The claim stays when the Pod stops, and the new Pod gets it again.
+    path: "{.status.phase}"
+    equals: Bound
+hints:
+  - "A headless Service has `clusterIP: None`. It selects the Pods of the StatefulSet by labels."
+  - Put the claim in `spec.volumeClaimTemplates` with the name data, and mount the volume data in the container.
+  - "`kubectl run -it --rm dns --image=busybox:1.36 --restart=Never -- nslookup db-0.db` shows the DNS name of a Pod."

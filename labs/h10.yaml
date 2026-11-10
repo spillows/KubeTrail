@@ -1,0 +1,32 @@
+# Lab h10. Boss. charts/broken installs, but the Service selector and targetPort are wrong.
+id: h10
+title: Repair a broken chart
+namespace: lab-h10
+needs: [helm]
+setup: []
+checks:
+  - id: endpoints
+    say: The Service "shop" has endpoint addresses.
+    get: endpointslices
+    selector: kubernetes.io/service-name=shop
+    why: A Service sends traffic only to the Pods that its selector matches.
+    path: "{.items[*].endpoints[*].addresses[0]}"
+    exists: true
+  - id: port
+    say: The endpoints of "shop" use the container port 80.
+    get: endpointslices
+    selector: kubernetes.io/service-name=shop
+    why: The targetPort of the Service must be the port that the container listens on.
+    path: "{.items[*].ports[*].port}"
+    equals: "80"
+  - id: revision
+    say: The deployed revision of the release "shop" is 2 or more.
+    get: secrets
+    selector: owner=helm,name=shop,status=deployed
+    why: Repair the chart, then upgrade the release. Do not edit the objects with kubectl.
+    path: "{.items[*].metadata.labels.version}"
+    atLeast: 2
+hints:
+  - "`cp -r charts/broken workspace/h10`, then `helm install shop workspace/h10 -n lab-h10`."
+  - "Compare the selector in `kubectl describe service shop -n lab-h10` with `kubectl get pods -n lab-h10 --show-labels`."
+  - "Compare the Service `targetPort` with the `containerPort` in `workspace/h10/templates/`. Then `helm upgrade shop workspace/h10 -n lab-h10`."

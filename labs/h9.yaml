@@ -1,0 +1,24 @@
+# Lab h9. An upgrade with an image that does not exist, and --rollback-on-failure.
+id: h9
+title: A failed upgrade that rolls itself back
+namespace: lab-h9
+needs: [helm]
+setup: []
+checks:
+  - id: failed
+    say: The release "demo" has a revision with the status failed.
+    get: secrets
+    selector: owner=helm,name=demo,status=failed
+    why: Helm keeps the failed revision in the history. It shows what went wrong.
+    path: "{.items[*].metadata.name}"
+    exists: true
+  - id: image
+    say: The Deployment "demo" uses the image nginx:1.27.
+    get: deployment/demo
+    why: After the failure, Helm rolls back to the last revision that worked.
+    path: "{.spec.template.spec.containers[0].image}"
+    equals: nginx:1.27
+hints:
+  - "`helm install demo charts/demo -n lab-h9 --wait` installs a release that works."
+  - "`--set image.tag=no-such-tag` gives an image that does not exist."
+  - "`helm upgrade` with `--rollback-on-failure --timeout 60s` waits, and rolls back when the Pods do not start."

@@ -1,0 +1,23 @@
+id: k22
+steps:
+  - apply:
+      - apiVersion: apps/v1
+        kind: Deployment
+        metadata: {name: web}
+        spec:
+          replicas: 4
+          strategy:
+            type: RollingUpdate
+            rollingUpdate: {maxSurge: 1, maxUnavailable: 0}
+          selector:
+            matchLabels: {app: web}
+          template:
+            metadata:
+              labels: {app: web}
+            spec:
+              containers:
+                - name: nginx
+                  image: nginx:1.27
+  - run: [kubectl, rollout, status, deployment/web, -n, lab-k22, --timeout=180s]
+  - run: [kubectl, set, image, deployment/web, nginx=nginx:1.28, -n, lab-k22]
+  - run: [kubectl, rollout, status, deployment/web, -n, lab-k22, --timeout=240s]

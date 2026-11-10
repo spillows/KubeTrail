@@ -1,0 +1,27 @@
+id: k18
+steps:
+  - apply:
+      - apiVersion: v1
+        kind: PersistentVolumeClaim
+        metadata: {name: data}
+        spec:
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests: {storage: 100Mi}
+      - apiVersion: v1
+        kind: Pod
+        metadata: {name: writer}
+        spec:
+          restartPolicy: Never
+          volumes:
+            - name: data
+              persistentVolumeClaim: {claimName: data}
+          containers:
+            - name: writer
+              image: busybox:1.36
+              command: [sh, -c, "echo hello > /data/marker"]
+              volumeMounts:
+                - {name: data, mountPath: /data}
+  - run: [kubectl, wait, "--for=jsonpath={.status.phase}=Succeeded", pod/writer, -n, lab-k18, --timeout=180s]
+  - run: [kubectl, delete, pod, writer, -n, lab-k18, --wait=true]
+  - run: [kubectl, wait, "--for=jsonpath={.status.readyReplicas}=1", deployment/witness, -n, lab-k18, --timeout=180s]

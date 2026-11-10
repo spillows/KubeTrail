@@ -1,0 +1,5 @@
+id: k14
+steps:
+  - run: [kubectl, expose, deployment, api, --port=80, -n, lab-k14]
+  - run: [kubectl, rollout, status, deployment/api, -n, lab-k14, --timeout=180s]
+  - run: [kubectl, wait, "--for=jsonpath={.status.readyReplicas}=1", deployment/witness, -n, lab-k14, --timeout=120s]

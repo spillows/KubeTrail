@@ -1,0 +1,23 @@
+# Lab t8. terraform destroy removes the resources, but the state Secret stays.
+id: t8
+title: terraform destroy as a step
+namespace: lab-t8
+needs: [terraform]
+setup: []
+checks:
+  - id: gone
+    say: The Deployment "temp" does not exist.
+    get: deployment/temp
+    why: terraform destroy deletes each resource in the state.
+    path: "{.metadata.name}"
+    exists: false
+  - id: state
+    say: The state Secret "tfstate-default-t8" exists in the lab namespace.
+    get: secret/tfstate-default-t8
+    why: After a destroy, the state is empty, but the backend keeps the Secret for the next apply.
+    path: "{.metadata.labels.tfstate}"
+    equals: "true"
+hints:
+  - "Make the Deployment \"temp\" with `terraform apply` first."
+  - "`terraform state list` shows the resources in the state."
+  - "`terraform destroy` deletes them. Then look at `kubectl get secrets -n lab-t8`."

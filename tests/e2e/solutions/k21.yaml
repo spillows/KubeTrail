@@ -1,0 +1,6 @@
+id: k21
+steps:
+  - run: [kubectl, patch, deployment, web, --type=json, "-p=[{\"op\":\"replace\",\"path\":\"/spec/template/spec/containers/0/livenessProbe/httpGet/path\",\"value\":\"/\"}]", -n, lab-k21]
+  - run: [kubectl, rollout, status, deployment/web, -n, lab-k21, --timeout=180s]
+  - run: [kubectl, delete, pods, -l, app=web, --wait=true, -n, lab-k21]
+  - run: [kubectl, wait, --for=condition=Ready, pods, -l, app=web, -n, lab-k21, --timeout=120s]

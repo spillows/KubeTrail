@@ -1,0 +1,5 @@
+id: k26
+steps:
+  - run: [kubectl, create, role, pod-reader, --verb=list, --resource=pods, -n, lab-k26]
+  - run: [kubectl, create, rolebinding, pod-reader, --role=pod-reader, "--serviceaccount=lab-k26:pod-reader", -n, lab-k26]
+  - run: [kubectl, wait, "--for=jsonpath={.status.readyReplicas}=1", deployment/list-pods, -n, lab-k26, --timeout=180s]

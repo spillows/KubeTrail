@@ -1,0 +1,31 @@
+# Lab k27. runAsNonRoot can be on the Pod or on the container, thus that
+# check searches the whole Pod spec. readOnlyRootFilesystem is only on the
+# container.
+id: k27
+title: Run as non-root with a read-only root filesystem
+namespace: lab-k27
+setup: []
+checks:
+  - id: ready
+    say: The Deployment "web" has 1 or more ready replicas.
+    get: deployment/web
+    why: With a read-only root filesystem, nginx fails to start when it has no writable volume for /tmp.
+    path: "{.status.readyReplicas}"
+    atLeast: 1
+  - id: non-root
+    say: The Pods of "web" have runAsNonRoot true.
+    get: deployment/web
+    why: The kubelet refuses to start a container that runs as user 0. A process that escapes a root container is root on the node.
+    path: "{.spec.template.spec..runAsNonRoot}"
+    matches: "^true( true)*$"
+  - id: read-only
+    say: Each container of "web" has readOnlyRootFilesystem true.
+    get: deployment/web
+    why: An attacker cannot change the programs or the settings in the image when the root filesystem is read-only.
+    path: "{.spec.template.spec.containers[*].securityContext.readOnlyRootFilesystem}"
+    matches: "^true( true)*$"
+hints:
+  - nginxinc/nginx-unprivileged runs as user 101 and listens on port 8080. The image nginx runs as root.
+  - Put runAsNonRoot in securityContext of the Pod or of the container. Put readOnlyRootFilesystem in securityContext of the container.
+  - Add an emptyDir volume, and mount it at /tmp.
+  - "`kubectl logs deploy/web` shows the file that nginx cannot write."

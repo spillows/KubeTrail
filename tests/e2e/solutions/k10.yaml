@@ -1,0 +1,23 @@
+id: k10
+steps:
+  - apply:
+      - apiVersion: v1
+        kind: Pod
+        metadata: {name: fixed}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+              resources:
+                requests: {cpu: 100m, memory: 64Mi}
+                limits: {cpu: 100m, memory: 64Mi}
+      - apiVersion: v1
+        kind: Pod
+        metadata: {name: flex}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+              resources:
+                requests: {cpu: 50m, memory: 32Mi}
+                limits: {cpu: 200m, memory: 128Mi}

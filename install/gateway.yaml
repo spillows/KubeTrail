@@ -1,0 +1,29 @@
+# The GatewayClass "quest" for the Gateway API lab (k15). Install Envoy Gateway
+# first; the help of the lab panel gives the commands. The EnvoyProxy makes the
+# Service of the Gateway a ClusterIP Service with the fixed name quest-gateway.
+# Thus minikube does not need `minikube tunnel`, and the witness of k15 has a
+# fixed address.
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: EnvoyProxy
+metadata:
+  name: quest
+  namespace: envoy-gateway-system
+spec:
+  provider:
+    type: Kubernetes
+    kubernetes:
+      envoyService:
+        name: quest-gateway
+        type: ClusterIP
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: GatewayClass
+metadata:
+  name: quest
+spec:
+  controllerName: gateway.envoyproxy.io/gatewayclass-controller
+  parametersRef:
+    group: gateway.envoyproxy.io
+    kind: EnvoyProxy
+    name: quest
+    namespace: envoy-gateway-system

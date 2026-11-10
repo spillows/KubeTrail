@@ -1,0 +1,54 @@
+# Lab k24. Needs metrics-server: without it, the autoscaler has no current
+# metric. Setup makes a Deployment with a CPU request, because the autoscaler
+# calculates the use as a percentage of the request.
+id: k24
+title: A HorizontalPodAutoscaler
+namespace: lab-k24
+needs: [addon:metrics-server]
+setup:
+  - apiVersion: apps/v1
+    kind: Deployment
+    metadata:
+      name: web
+    spec:
+      replicas: 1
+      selector:
+        matchLabels: {app: web}
+      template:
+        metadata:
+          labels: {app: web}
+        spec:
+          containers:
+            - name: web
+              image: nginx:1.27
+              resources:
+                requests: {cpu: 100m}
+checks:
+  - id: min
+    say: The autoscaler "web" has 1 minimum replica.
+    get: horizontalpodautoscaler/web
+    why: minReplicas is the lowest number of replicas when the load is low.
+    path: "{.spec.minReplicas}"
+    equals: "1"
+  - id: max
+    say: The autoscaler "web" has 5 maximum replicas.
+    get: horizontalpodautoscaler/web
+    why: maxReplicas stops the autoscaler from using all the capacity of the cluster.
+    path: "{.spec.maxReplicas}"
+    equals: "5"
+  - id: target
+    say: The autoscaler "web" has a CPU target of 50%.
+    get: horizontalpodautoscaler/web
+    why: The autoscaler compares the CPU use with this percentage of the request, and adds or removes replicas.
+    path: '{.spec.metrics[?(@.resource.name=="cpu")].resource.target.averageUtilization}'
+    equals: "50"
+  - id: current
+    say: The autoscaler "web" shows a current CPU value.
+    get: horizontalpodautoscaler/web
+    why: The autoscaler reads CPU use from metrics-server. Without a current value it cannot scale.
+    path: "{.status.currentMetrics[*].resource.current.averageUtilization}"
+    exists: true
+hints:
+  - "`kubectl autoscale deployment web` with --cpu-percent, --min and --max makes the autoscaler."
+  - "`kubectl get hpa web` shows <unknown> for some time. metrics-server needs about one minute to collect data."
+  - "`kubectl top pods` shows if metrics-server gives data."

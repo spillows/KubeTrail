@@ -1,0 +1,25 @@
+# Lab h2. The learner installs charts/demo, upgrades it and rolls it back.
+# Helm checks select the release Secret by label, never by name.
+id: h2
+title: Install, upgrade and roll back a release
+namespace: lab-h2
+needs: [helm]
+setup: []
+checks:
+  - id: revision
+    say: The deployed revision of the release "demo" is 3 or more.
+    get: secrets
+    selector: owner=helm,name=demo,status=deployed
+    why: A rollback does not go back in the history. It makes a new revision with the old manifest.
+    path: "{.items[*].metadata.labels.version}"
+    atLeast: 3
+  - id: image
+    say: The Deployment "demo" uses the image nginx:1.27 again.
+    get: deployment/demo
+    why: The rollback applies the values of revision 1 again, so the Pods use the first image.
+    path: "{.spec.template.spec.containers[0].image}"
+    equals: nginx:1.27
+hints:
+  - "`helm install demo charts/demo -n lab-h2` installs the chart. Add `--set image.tag=1.27-alpine` to `helm upgrade` to change the image."
+  - "`helm history demo -n lab-h2` shows each revision and its status."
+  - "`helm rollback demo 1 -n lab-h2` goes back to revision 1."

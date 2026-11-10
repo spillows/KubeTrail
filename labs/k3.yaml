@@ -1,0 +1,39 @@
+# Lab k3. The learner creates a Deployment, breaks the rollout with a bad
+# image tag, and then rolls back. The revision check and the image check
+# together show the rollback: the undo gives revision 1 the new number 3, and
+# the Deployment uses the first image again. The revision check alone does
+# not show it, because a second change of image also gives revision 3.
+id: k3
+title: Roll a Deployment and undo a bad rollout
+namespace: lab-k3
+setup: []
+checks:
+  - id: deployment-ready
+    say: The Deployment "web" has 3 ready replicas.
+    get: deployment/web
+    why: A Deployment keeps the number of Pods that you ask for. Ready replicas are Pods that can take traffic.
+    path: "{.status.readyReplicas}"
+    equals: "3"
+  - id: good-image
+    say: The Deployment uses the image nginx:1.27.
+    get: deployment/web
+    why: An undo puts back the Pod template of the last good revision, with its image.
+    path: "{.spec.template.spec.containers[0].image}"
+    equals: nginx:1.27
+  - id: rolled-back
+    say: The Deployment has a rollout history of 3 or more revisions.
+    get: deployment/web
+    why: Each change of the Pod template makes a new revision. An undo also makes a new revision.
+    path: "{.metadata.annotations.deployment\\.kubernetes\\.io/revision}"
+    atLeast: 3
+  - id: service
+    say: The Service "web" sends traffic to port 80.
+    get: service/web
+    why: A Service gives the Pods one stable address. The Pods come and go, but the Service stays.
+    path: "{.spec.ports[0].port}"
+    equals: "80"
+hints:
+  - Use `kubectl create deployment` with the --replicas flag.
+  - Use `kubectl set image` with a tag that does not exist. The rollout stops.
+  - Use `kubectl rollout undo` to go back to the last good revision.
+  - Use `kubectl expose deployment` to make the Service.

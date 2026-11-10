@@ -1,0 +1,71 @@
+id: V
+title: Health and rollouts
+duration: about 3 hours
+description: Tell Kubernetes when a container is healthy, change an app with no down time, keep enough Pods during maintenance, and add Pods when the load increases.
+quests:
+- id: k20
+  type: READ
+  tags: [k8s]
+  minutes: 40
+  title: Read about probes, rollout strategy, disruption budgets and autoscaling
+  task: Read the four concept pages. Write one sentence for each of these questions. What does the kubelet do when a liveness probe fails, and when a readiness probe fails? What do maxSurge and maxUnavailable control? What does a PodDisruptionBudget stop? What does a HorizontalPodAutoscaler need to read? Then click "Mark done".
+  links:
+  - title: Liveness, readiness and startup probes
+    url: https://kubernetes.io/docs/concepts/configuration/liveness-readiness-startup-probes/
+  - title: Deployments, rolling update
+    url: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment
+  - title: Disruptions
+    url: https://kubernetes.io/docs/concepts/workloads/pods/disruptions/
+  - title: Horizontal Pod Autoscaling
+    url: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+- id: k21
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: A liveness probe kills a healthy app
+  task: >-
+    Click "Start lab". The lab namespace has the Deployment "web". Its Pods
+    restart again and again, but nginx is healthy. Find why the kubelet
+    restarts them. Repair the liveness probe so that it tests a path that
+    nginx gives. Keep a liveness probe. Then click "Check my work".
+  links:
+  - title: Configure liveness, readiness and startup probes
+    url: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+- id: k22
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: maxSurge and maxUnavailable
+  task: >-
+    Click "Start lab". Make the Deployment "web" with 4 replicas and the image
+    nginx:1.27. During a rolling update, it must not stop an old Pod before a
+    new Pod is ready, and it adds only 1 Pod at a time. Change the image to
+    nginx:1.28 and watch the rollout. Then click "Check my work".
+  links:
+  - title: Rolling update Deployment
+    url: https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#rolling-update-deployment
+- id: k23
+  type: LAB
+  tags: [k8s]
+  minutes: 30
+  title: A PodDisruptionBudget
+  task: >-
+    Click "Start lab". The lab namespace has the Deployment "web" with 3
+    replicas. Make the PodDisruptionBudget "web" so that a drain of a node can
+    stop only 1 Pod of "web" at a time. Then click "Check my work".
+  links:
+  - title: Specify a disruption budget
+    url: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+- id: k24
+  type: LAB
+  tags: [k8s]
+  minutes: 40
+  title: A HorizontalPodAutoscaler
+  task: >-
+    Click "Start lab". The lab namespace has the Deployment "web" with CPU
+    requests. Make the HorizontalPodAutoscaler "web" that keeps the CPU use
+    of "web" near 50% of its request, with 1 to 5 replicas. Wait until the
+    autoscaler shows a current CPU value. Then click "Check my work".
+  links:
+  - title: HorizontalPodAutoscaler walkthrough
+    url: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale-walkthrough/

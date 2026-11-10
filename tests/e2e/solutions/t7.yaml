@@ -1,0 +1,19 @@
+id: t7
+dir: workspace/t7
+steps:
+- file:
+    name: backend.tf
+    text: "terraform {\n  backend \"kubernetes\" {\n    secret_suffix  = \"t7\"\n    namespace      = \"lab-t7\"\n    config_path    = \"~/.kube/config\"\n    config_context = \"{{context}}\"\n  }\n}\n"
+- file:
+    name: main.tf
+    text: "data \"kubernetes_config_map_v1\" \"platform\" {\n  metadata {\n    name      = \"platform\"\n    namespace = \"lab-t7\"\n  }\n}\n\nresource \"kubernetes_config_map_v1\" \"app\" {\n  metadata\
+      \ {\n    name      = \"app\"\n    namespace = \"lab-t7\"\n  }\n  data = { region = data.kubernetes_config_map_v1.platform.data.region }\n}\n"
+- run:
+  - terraform
+  - init
+  - -input=false
+- run:
+  - terraform
+  - apply
+  - -auto-approve
+  - -input=false
