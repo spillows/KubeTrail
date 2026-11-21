@@ -14,27 +14,19 @@ design.
 3. **A weekly CI job that finds drift.** It runs the end-to-end test against
    new `helm`, `terraform` and minikube releases. The tests use fakes today,
    so CI does not see a change in those tools.
-4. **The AI agent.** Two tasks only: `grade_rubric` and
-   `author_lab`. Both give JSON against a fixed schema, and the app refuses a
-   reply that does not agree with the schema. No shell, file or network tool.
-   The program writes the files, not the model. The system prompt is a
-   constant in `backend/agent.py`. Off by default: the learner adds an
-   Anthropic API key. A new lab goes to a folder that the loader reads, goes
-   through the same validator as a built-in lab, and must pass the end-to-end
-   test. The UI shows it as unofficial.
-5. **The Docker start** (`docker compose up`, with no Python on the host). The
+4. **The Docker start** (`docker compose up`, with no Python on the host). The
    design and its test results are below. The course design changes it in
    three places. See "Changes from the course design".
-6. **Linux.** The minikube `docker` driver on Linux gives the API server the
+5. **Linux.** The minikube `docker` driver on Linux gives the API server the
    address of the node container (for example `192.168.49.2:8443`), not a port
    on `127.0.0.1`. The Docker design below needs a change for Linux.
-7. **Published images.** A GitHub Actions job builds the image with buildx on
+6. **Published images.** A GitHub Actions job builds the image with buildx on
    each tag. It sends `linux/amd64` and `linux/arm64` images to `ghcr.io`,
    with checksums.
-8. **A "Further study" act** after Act XII, with READ links: Kubernetes the
+7. **A "Further study" act** after Act XII, with READ links: Kubernetes the
    Hard Way, the Killercoda CKA scenarios, and the book
    *Terraform: Up & Running*.
-9. **Debug logging.** No module logs today, so a failed check leaves no
+8. **Debug logging.** No module logs today, so a failed check leaves no
    record. Add one DEBUG line in `cluster.run`, behind an environment
    variable: the arguments and the exit code. Never log stdout, which can hold
    Secret data.
