@@ -110,7 +110,7 @@ def with_context(args: list[str], context: str) -> list[str]:
 def execute(solution: dict, context: str) -> None:
     """Run each step. A failed step stops the solution with its error text."""
     lab_ns = f"lab-{solution['id']}"
-    with tempfile.TemporaryDirectory(prefix=f"mq-{solution['id']}-") as tmp:
+    with tempfile.TemporaryDirectory(prefix=f"kt-{solution['id']}-") as tmp:
         cwd = Path(tmp)
         if "dir" in solution:
             src = ROOT / solution["dir"]

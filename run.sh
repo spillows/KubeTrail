@@ -5,7 +5,7 @@
 # starts the server on 127.0.0.1, and opens the browser.
 #
 #   PORT=8001 ./run.sh        use a different port
-#   MQ_NO_BROWSER=1 ./run.sh  do not open the browser
+#   KT_NO_BROWSER=1 ./run.sh  do not open the browser
 set -euo pipefail
 cd "$(dirname "$0")"
 
@@ -61,7 +61,7 @@ if ! "${VENV}/bin/python" -c "import socket,sys; s=socket.socket(); s.setsockopt
   die "port ${PORT} is in use. Stop the other server, or run: PORT=8001 ./run.sh"
 fi
 
-if [[ -z "${MQ_NO_BROWSER:-}" ]] && command -v open >/dev/null 2>&1; then
+if [[ -z "${KT_NO_BROWSER:-}" ]] && command -v open >/dev/null 2>&1; then
   (
     for _ in $(seq 50); do
       if curl -fsS -o /dev/null "${URL}/api/content" 2>/dev/null; then open "${URL}"; exit 0; fi

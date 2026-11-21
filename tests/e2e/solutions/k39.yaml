@@ -1,6 +1,6 @@
 id: k39
 steps:
-  - run: [kubectl, uncordon, mq-multi-m02]
+  - run: [kubectl, uncordon, kt-multi-m02]
   - run: [kubectl, rollout, status, deployment/web, -n, lab-k39, --timeout=180s]
-  - run: [kubectl, drain, mq-multi-m02, --ignore-daemonsets, --delete-emptydir-data, --timeout=240s]
+  - run: [kubectl, drain, kt-multi-m02, --ignore-daemonsets, --delete-emptydir-data, --timeout=240s]
   - run: [kubectl, rollout, status, deployment/web, -n, lab-k39, --timeout=180s]

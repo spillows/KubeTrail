@@ -1,4 +1,4 @@
-# Lab k35. Needs the three nodes of mq-multi. The label on the node stays
+# Lab k35. Needs the three nodes of kt-multi. The label on the node stays
 # after Reset, because Reset deletes only the lab namespace.
 id: k35
 title: Node labels and node affinity
@@ -7,8 +7,8 @@ needs: [nodes:3]
 setup: []
 checks:
   - id: label
-    say: The node mq-multi-m02 has the label disk=ssd.
-    get: node/mq-multi-m02
+    say: The node kt-multi-m02 has the label disk=ssd.
+    get: node/kt-multi-m02
     why: Node affinity selects nodes by their labels. A node gets labels from the cluster and from you.
     path: "{.metadata.labels.disk}"
     equals: ssd
@@ -25,13 +25,13 @@ checks:
     path: "{.status.readyReplicas}"
     equals: "2"
   - id: node
-    say: Each Pod of "db" runs on mq-multi-m02.
+    say: Each Pod of "db" runs on kt-multi-m02.
     get: pods
     selector: app=db
-    why: Only mq-multi-m02 has the label disk=ssd.
+    why: Only kt-multi-m02 has the label disk=ssd.
     path: "{.items[*].spec.nodeName}"
-    matches: "^mq-multi-m02( mq-multi-m02)*$"
+    matches: "^kt-multi-m02( kt-multi-m02)*$"
 hints:
-  - "`kubectl label node mq-multi-m02 disk=ssd` adds the label. `kubectl get nodes --show-labels` shows the labels."
+  - "`kubectl label node kt-multi-m02 disk=ssd` adds the label. `kubectl get nodes --show-labels` shows the labels."
   - Put spec.affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution in the Pod template, with a matchExpressions entry for key disk, operator In and values [ssd].
   - "`kubectl get pods -o wide` shows the node of each Pod."

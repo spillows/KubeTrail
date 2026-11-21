@@ -68,13 +68,13 @@ def test_calico(fake):
 
 
 def test_calico_read_pins_context(fake):
-    needs.evaluate(["cni:calico"], "mq-multi")
-    assert fake["calls"][0][:3] == ["kubectl", "--context", "mq-multi"]
+    needs.evaluate(["cni:calico"], "kt-multi")
+    assert fake["calls"][0][:3] == ["kubectl", "--context", "kt-multi"]
 
 
 def test_gateway(fake):
-    assert needs.evaluate(["gateway"], "mq-multi")["gateway"]["met"] is True
-    assert fake["calls"][0][:6] == ["kubectl", "--context", "mq-multi", "get", "gatewayclass", "quest"]
+    assert needs.evaluate(["gateway"], "kt-multi")["gateway"]["met"] is True
+    assert fake["calls"][0][:6] == ["kubectl", "--context", "kt-multi", "get", "gatewayclass", "quest"]
     fake["gateway"] = ""
     out = needs.evaluate(["gateway"], "minikube")["gateway"]
     assert out["met"] is False
@@ -86,7 +86,7 @@ def test_nodes_counts_ready_only(fake):
     fake["nodes"] = [node(), node(), node(ready=False)]
     out = needs.evaluate(["nodes:2", "nodes:3"], "minikube")
     assert met(out) == {"nodes:2": True, "nodes:3": False}
-    assert "mq-multi" in out["nodes:3"]["help"] and "has 2" in out["nodes:3"]["help"]
+    assert "kt-multi" in out["nodes:3"]["help"] and "has 2" in out["nodes:3"]["help"]
     assert len(fake["calls"]) == 1
 
 

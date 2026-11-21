@@ -23,7 +23,7 @@ INSTALL = {
     "helm": "brew install helm",
     "terraform": "brew install hashicorp/tap/terraform",
 }
-MULTI = "minikube start -p mq-multi --driver=docker --cni=calico --nodes=3"
+MULTI = "minikube start -p kt-multi --driver=docker --cni=calico --nodes=3"
 ENVOY_GATEWAY = "v1.10.0"
 GATEWAY_CLASS = "quest"
 GATEWAY_INSTALL = (
@@ -108,8 +108,8 @@ def evaluate(tokens, context: str) -> dict[str, dict]:
             met = nodes is not None and nodes >= n
             out[t] = {"met": met, "help": "" if met else
                       f"This lab needs {n} Ready nodes. The profile '{context}' has {nodes or 0}. "
-                      f"Start the mq-multi profile: `{MULTI}`, then run "
-                      f"`kubectl config use-context mq-multi`."}
+                      f"Start the kt-multi profile: `{MULTI}`, then run "
+                      f"`kubectl config use-context kt-multi`."}
         elif t.startswith("addon:"):
             name = t.split(":", 1)[1]
             met = addons is not None and name in addons

@@ -1,7 +1,7 @@
 id: k35
 steps:
-  - run: [kubectl, uncordon, mq-multi-m02]
-  - run: [kubectl, label, node, mq-multi-m02, disk=ssd, --overwrite]
+  - run: [kubectl, uncordon, kt-multi-m02]
+  - run: [kubectl, label, node, kt-multi-m02, disk=ssd, --overwrite]
   - apply:
       - apiVersion: apps/v1
         kind: Deployment

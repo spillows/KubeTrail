@@ -47,7 +47,7 @@ The next start skips the install, unless `pyproject.toml` changed.
 | Option | What it does |
 | --- | --- |
 | `PORT=8001 ./run.sh` | Uses a different port. |
-| `MQ_NO_BROWSER=1 ./run.sh` | Does not open the browser. |
+| `KT_NO_BROWSER=1 ./run.sh` | Does not open the browser. |
 
 > [!NOTE]
 > The `python3` that comes with macOS is Python 3.9. The app needs Python 3.11 or newer, so install `python@3.12` with Homebrew. `./run.sh` finds it for you.
