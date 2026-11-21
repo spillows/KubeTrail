@@ -1,0 +1,5 @@
+# Gitleaks ignores these findings.
+# labs/k9.yaml line 14 has a demo password for the lab. It is not a real secret.
+# The first line is for "gitleaks git". The second line is for "gitleaks dir".
+55101d063bc6d80a496a560d56a3dd04d149e807:labs/k9.yaml:generic-api-key:14
+labs/k9.yaml:generic-api-key:14
