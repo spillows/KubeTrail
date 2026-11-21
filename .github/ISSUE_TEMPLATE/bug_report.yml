@@ -1,0 +1,54 @@
+name: Bug report
+description: Tell us about a problem in the app, a lab or a check.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Do not report a security problem here. See [SECURITY.md](https://github.com/spillows/KubeTrail/blob/main/SECURITY.md).
+  - type: input
+    id: quest
+    attributes:
+      label: Quest or lab id
+      description: The id of the quest or lab, if the problem is in one. For example, k15.
+      placeholder: k15
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps
+      description: The steps that cause the problem.
+      placeholder: |
+        1. Open the quest k15.
+        2. Click "Start lab".
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      description: What you expected to see.
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+      description: What you saw. Add the error text or a screenshot.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: Doctor output
+      description: Run `.venv/bin/python scripts/doctor.py` and paste the output here.
+      render: text
+    validations:
+      required: true
+  - type: input
+    id: commit
+    attributes:
+      label: Commit
+      description: Run `git rev-parse --short HEAD` and paste the output here.
+    validations:
+      required: true

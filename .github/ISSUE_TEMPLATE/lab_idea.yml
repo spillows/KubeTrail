@@ -1,0 +1,48 @@
+name: Lab idea
+description: Suggest a new lab or a change to a lab.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A lab states an end state. The app reads the cluster and proves it. Read the lab rules in [CONTRIBUTING.md](https://github.com/spillows/KubeTrail/blob/main/CONTRIBUTING.md) first.
+  - type: input
+    id: topic
+    attributes:
+      label: Topic
+      description: The subject of the lab. For example, PodDisruptionBudgets.
+    validations:
+      required: true
+  - type: dropdown
+    id: track
+    attributes:
+      label: Track
+      options:
+        - Kubernetes
+        - Helm
+        - Terraform
+        - Capstone
+    validations:
+      required: true
+  - type: textarea
+    id: end_state
+    attributes:
+      label: End state
+      description: The state of the cluster when the learner completes the lab. Do not give the commands.
+      placeholder: Deployment "web" has 3 ready replicas, and PodDisruptionBudget "web" permits 1 disruption.
+    validations:
+      required: true
+  - type: textarea
+    id: checks
+    attributes:
+      label: Checks
+      description: The objects and fields that prove the end state. A check reads one field of one kind of object in the lab namespace.
+      placeholder: poddisruptionbudget/web, .status.disruptionsAllowed, equals 1
+    validations:
+      required: true
+  - type: textarea
+    id: needs
+    attributes:
+      label: Needs
+      description: A tool, an addon, Calico or three nodes, if the lab needs one.
+      placeholder: "addon:metrics-server"
