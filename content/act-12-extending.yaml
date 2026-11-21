@@ -22,7 +22,7 @@ quests:
   minutes: 40
   title: A CRD and a custom resource
   task: >-
-    Use the mq-multi profile. Click "Start lab". Make the
+    Use the kt-multi profile. Click "Start lab". Make the
     CustomResourceDefinition "widgets.quest.example.com", with the group
     quest.example.com, the kind Widget, the version v1 and the scope
     Namespaced. Its schema has an integer field spec.size. Then make the Widget

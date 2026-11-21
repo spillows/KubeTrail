@@ -1,8 +1,8 @@
 id: k36
 steps:
-  - run: [kubectl, uncordon, mq-multi-m02]
-  - run: [kubectl, taint, nodes, mq-multi-m03, "dedicated=gpu:NoSchedule", --overwrite]
-  - run: [kubectl, taint, nodes, mq-multi-m03, "dedicated:NoSchedule-"]
+  - run: [kubectl, uncordon, kt-multi-m02]
+  - run: [kubectl, taint, nodes, kt-multi-m03, "dedicated=gpu:NoSchedule", --overwrite]
+  - run: [kubectl, taint, nodes, kt-multi-m03, "dedicated:NoSchedule-"]
   - apply:
       - apiVersion: apps/v1
         kind: Deployment

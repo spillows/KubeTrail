@@ -71,7 +71,7 @@ def test_api_cluster_gives_200_for_null_status(fake, monkeypatch):
 
 
 def test_status_pins_context_on_each_kubectl_call(fake, monkeypatch):
-    fake("mq-multi", ["minikube", "mq-multi"])
+    fake("kt-multi", ["minikube", "kt-multi"])
     calls = []
 
     def run(args, **_kw):
@@ -83,4 +83,4 @@ def test_status_pins_context_on_each_kubectl_call(fake, monkeypatch):
     monkeypatch.setattr(cluster, "run", run)
     cluster.status()
     kubectl = [a for a in calls if a[0] == "kubectl" and a[1] != "config"]
-    assert len(kubectl) == 2 and all(a[1:3] == ["--context", "mq-multi"] for a in kubectl)
+    assert len(kubectl) == 2 and all(a[1:3] == ["--context", "kt-multi"] for a in kubectl)

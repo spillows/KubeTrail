@@ -1,4 +1,4 @@
-# Lab k38. Needs the three nodes of mq-multi. mq-multi-m03 has the taint from
+# Lab k38. Needs the three nodes of kt-multi. kt-multi-m03 has the taint from
 # k37, thus the DaemonSet needs a toleration for 3 ready Pods.
 id: k38
 title: A DaemonSet on each node

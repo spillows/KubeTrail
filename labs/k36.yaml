@@ -1,4 +1,4 @@
-# Lab k36. Needs the three nodes of mq-multi. Required anti-affinity with
+# Lab k36. Needs the three nodes of kt-multi. Required anti-affinity with
 # 3 replicas needs 3 schedulable nodes without a taint.
 id: k36
 title: Anti-affinity and topology spread

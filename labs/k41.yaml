@@ -1,4 +1,4 @@
-# Lab k41. Needs the mq-multi profile, as the design says for Act XII. The
+# Lab k41. Needs the kt-multi profile, as the design says for Act XII. The
 # CRD is cluster-scoped. Reset deletes the lab namespace and the Widget, not
 # the CRD.
 id: k41

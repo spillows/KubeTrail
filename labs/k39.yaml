@@ -1,6 +1,6 @@
-# Lab k39. Needs the three nodes of mq-multi. mq-multi-m03 has the taint from
-# k37, thus the Pods of "web" can go only on mq-multi and mq-multi-m02. The
-# drain moves them all to mq-multi, and the budget permits one eviction at a
+# Lab k39. Needs the three nodes of kt-multi. kt-multi-m03 has the taint from
+# k37, thus the Pods of "web" can go only on kt-multi and kt-multi-m02. The
+# drain moves them all to kt-multi, and the budget permits one eviction at a
 # time.
 id: k39
 title: Cordon and drain, with a disruption budget
@@ -32,8 +32,8 @@ setup:
         matchLabels: {app: web}
 checks:
   - id: unschedulable
-    say: The node mq-multi-m02 is unschedulable.
-    get: node/mq-multi-m02
+    say: The node kt-multi-m02 is unschedulable.
+    get: node/kt-multi-m02
     why: A drain first cordons the node, thus the scheduler puts no new Pod on it.
     path: "{.spec.unschedulable}"
     equals: "true"
@@ -44,12 +44,12 @@ checks:
     path: "{.spec.minAvailable}"
     equals: "2"
   - id: node
-    say: No Pod of "web" runs on mq-multi-m02.
+    say: No Pod of "web" runs on kt-multi-m02.
     get: pods
     selector: app=web
     why: A drain evicts the Pods from the node. Their controllers make new Pods on other nodes.
     path: "{.items[*].spec.nodeName}"
-    matches: "^(mq-multi|mq-multi-m03)( (mq-multi|mq-multi-m03))*$"
+    matches: "^(kt-multi|kt-multi-m03)( (kt-multi|kt-multi-m03))*$"
   - id: ready
     say: The Deployment "web" has 3 ready replicas.
     get: deployment/web
@@ -58,5 +58,5 @@ checks:
     equals: "3"
 hints:
   - "`kubectl get pods -o wide` shows the node of each Pod."
-  - "`kubectl drain mq-multi-m02 --ignore-daemonsets` cordons the node and evicts its Pods."
-  - "`kubectl uncordon mq-multi-m02` makes the node schedulable again after the lab."
+  - "`kubectl drain kt-multi-m02 --ignore-daemonsets` cordons the node and evicts its Pods."
+  - "`kubectl uncordon kt-multi-m02` makes the node schedulable again after the lab."

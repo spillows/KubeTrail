@@ -52,7 +52,7 @@ different:
   it ships. For example, the learner states the tools on the host, or the
   check moves to the host.
 * **The port forwarder must serve each minikube profile.** The advanced acts
-  use a second profile, `mq-multi`, with its own published ports.
+  use a second profile, `kt-multi`, with its own published ports.
 * **The image needs no `helm` and no `terraform`.** The app never runs them.
   The learner runs them on the host.
 
